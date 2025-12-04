@@ -1,97 +1,78 @@
-## ==========================================
-##  VISUAL STUDIO / .NET / C# PROJECT
-## ==========================================
-
-# Build results
+##############################################
+#   BUILD OUTPUT
+##############################################
 bin/
 obj/
 [Bb]uild/
-[Ll]og/
 [Rr]elease/
 [Dd]ebug/
-x64/
-x86/
-*.dll
-*.exe
-*.pdb
+out/
+publish/
 
-# Visual Studio generated files
+##############################################
+#   VISUAL STUDIO
+##############################################
 .vs/
 *.user
 *.suo
-*.userosscache
-*.sln.docstates
-
-# NuGet
-packages/
-*.nupkg
-!.gitignore
-.nuget/
-
-# Cache
 *.cache
 *.dbmdl
 
-# Logs
+##############################################
+#   NUGET
+##############################################
+packages/
+*.nupkg
+.nuget/
+
+##############################################
+#   LOGS & TEMP
+##############################################
 *.log
 logs/
+temp/
+*.tmp
+*.temp
 
-# Publish output
-publish/
-out/
-
-## ==========================================
-##  OS FILES
-## ==========================================
-
-# Windows system files
+##############################################
+#   OS / EDITOR FILES
+##############################################
+# Windows
 Thumbs.db
 Desktop.ini
 
-# MacOS
+# Mac
 .DS_Store
-
-## ==========================================
-##  IDE / EDITORS
-## ===================================================
 
 # VS Code
 .vscode/
 *.code-workspace
 
-# JetBrains Rider
+# Rider
 .idea/
 
-## ==========================================
-##  PROJECT-SPECIFIC (Happy Caro)
-## ==========================================
+##############################################
+#   PROJECT SPECIFIC
+##############################################
 
-# Database backup / temp SQL files
+# Database files (không cần commit)
 *.mdf
 *.ldf
 *.bak
-Server/Database/*.bak
 
-# Local config (không commit thông tin DB thật)
-appsettings.json
-Server/appsettings.json
-Client/appsettings.json
+# Local config riêng từng máy (nếu có)
+Client/config.local.json
+Server/config.local.json
 
-# Temporary files in ServerCore
-Server/temp/
-ServerCore/temp/
+##############################################
+#   DO NOT IGNORE (KEEP THESE FILES)
+##############################################
 
-# Ignore auto-generated protocol files if any
-Shared/Generated/
+# Giữ lại file cấu hình dự án WinForms/Console
+!App.config
+!*/App.config
 
-# Client-side saved game states (offline)
-Client/Saves/
+# Giữ lại JSON cấu hình nếu bạn dùng cho game
+!appsettings.json
+!*/appsettings.json
 
-## ==========================================
-##  Others
-## ==========================================
-
-*.tmp
-*.temp
-*.swp
-*.config
