@@ -1,16 +1,15 @@
 ##############################################
-#   BUILD OUTPUT
+# BUILD
 ##############################################
 bin/
 obj/
-[Bb]uild/
-[Rr]elease/
-[Dd]ebug/
-out/
 publish/
+Debug/
+Release/
+out/
 
 ##############################################
-#   VISUAL STUDIO
+# VISUAL STUDIO
 ##############################################
 .vs/
 *.user
@@ -19,14 +18,14 @@ publish/
 *.dbmdl
 
 ##############################################
-#   NUGET
+# NUGET
 ##############################################
 packages/
 *.nupkg
 .nuget/
 
 ##############################################
-#   LOGS & TEMP
+# LOGS / TEMP
 ##############################################
 *.log
 logs/
@@ -35,44 +34,25 @@ temp/
 *.temp
 
 ##############################################
-#   OS / EDITOR FILES
+# OS / EDITOR
 ##############################################
-# Windows
+.DS_Store
 Thumbs.db
 Desktop.ini
-
-# Mac
-.DS_Store
-
-# VS Code
 .vscode/
-*.code-workspace
-
-# Rider
 .idea/
 
 ##############################################
-#   PROJECT SPECIFIC
+# DATABASE FILES
 ##############################################
-
-# Database files (không cần commit)
 *.mdf
 *.ldf
 *.bak
 
-# Local config riêng từng máy (nếu có)
-Client/config.local.json
-Server/config.local.json
-
 ##############################################
-#   DO NOT IGNORE (KEEP THESE FILES)
+# DO NOT IGNORE CONFIG FILES
 ##############################################
-
-# Giữ lại file cấu hình dự án WinForms/Console
 !App.config
 !*/App.config
-
-# Giữ lại JSON cấu hình nếu bạn dùng cho game
 !appsettings.json
 !*/appsettings.json
-
