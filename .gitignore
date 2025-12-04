@@ -1,0 +1,97 @@
+## ==========================================
+##  VISUAL STUDIO / .NET / C# PROJECT
+## ==========================================
+
+# Build results
+bin/
+obj/
+[Bb]uild/
+[Ll]og/
+[Rr]elease/
+[Dd]ebug/
+x64/
+x86/
+*.dll
+*.exe
+*.pdb
+
+# Visual Studio generated files
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# NuGet
+packages/
+*.nupkg
+!.gitignore
+.nuget/
+
+# Cache
+*.cache
+*.dbmdl
+
+# Logs
+*.log
+logs/
+
+# Publish output
+publish/
+out/
+
+## ==========================================
+##  OS FILES
+## ==========================================
+
+# Windows system files
+Thumbs.db
+Desktop.ini
+
+# MacOS
+.DS_Store
+
+## ==========================================
+##  IDE / EDITORS
+## ===================================================
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# JetBrains Rider
+.idea/
+
+## ==========================================
+##  PROJECT-SPECIFIC (Happy Caro)
+## ==========================================
+
+# Database backup / temp SQL files
+*.mdf
+*.ldf
+*.bak
+Server/Database/*.bak
+
+# Local config (không commit thông tin DB thật)
+appsettings.json
+Server/appsettings.json
+Client/appsettings.json
+
+# Temporary files in ServerCore
+Server/temp/
+ServerCore/temp/
+
+# Ignore auto-generated protocol files if any
+Shared/Generated/
+
+# Client-side saved game states (offline)
+Client/Saves/
+
+## ==========================================
+##  Others
+## ==========================================
+
+*.tmp
+*.temp
+*.swp
+*.config
