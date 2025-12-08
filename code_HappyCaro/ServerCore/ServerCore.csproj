@@ -91,6 +91,9 @@
     <Compile Include="ServerCore\Server.cs" />
     <Compile Include="ServerCore\Services.cs" />
     <Compile Include="Shared.cs" />
+    <EmbeddedResource Include="FormServer.resx">
+      <DependentUpon>FormServer.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>

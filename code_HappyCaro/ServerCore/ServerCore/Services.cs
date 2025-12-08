@@ -1,214 +1,507 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.SqlClient; // Thư viện để nối SQL
+using System.Data.SqlClient;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace ServerCore.ServerCore
 {
-    // Model User
-    public class User
+    public static class Services
     {
-        public string Username { get; set; }
-        public string Password { get; set; }
-        public string Email { get; set; }
-        public string Rank { get; set; }
-        public int Wins { get; set; }
-        public int Losses { get; set; }
-
-        public User() { } // Constructor rỗng
-
-        public User(string username, string password)
-        {
-            Username = username;
-            Password = password;
-            Email = username + "@game.com";
-            Rank = "Newbie";
-            Wins = 0;
-            Losses = 0;
-        }
-    }
-
-    public class Services
-    {
-        // ============================================================
-        // 1. DATABASE (SQL SERVER VERSION)
-        // ============================================================
-        public static class Database
-        {
-            // CHÚ Ý: Bạn sửa chuỗi này cho đúng máy bạn
-            // Server=.;  nghĩa là máy localhost
-            // Database=GameDB; tên database bạn vừa tạo
-            // Integrated Security=True; dùng tài khoản Windows để đăng nhập
-            private static string connectionString = @"Server=.;Database=GameDB;Integrated Security=True;";
-
-            // Hàm lấy User từ SQL
-            public static User GetUser(string username)
-            {
-                User user = null;
-
-                try
-                {
-                    using (SqlConnection conn = new SqlConnection(connectionString))
-                    {
-                        conn.Open();
-                        string query = "SELECT * FROM Users WHERE Username = @u";
-
-                        using (SqlCommand cmd = new SqlCommand(query, conn))
-                        {
-                            // Dùng tham số @u để chống hack SQL Injection
-                            cmd.Parameters.AddWithValue("@u", username);
-
-                            using (SqlDataReader reader = cmd.ExecuteReader())
-                            {
-                                if (reader.Read())
-                                {
-                                    user = new User();
-                                    user.Username = reader["Username"].ToString();
-                                    user.Password = reader["Password"].ToString();
-                                    user.Email = reader["Email"] != DBNull.Value ? reader["Email"].ToString() : "";
-                                    user.Rank = reader["Rank"].ToString();
-                                    user.Wins = Convert.ToInt32(reader["Wins"]);
-                                    user.Losses = Convert.ToInt32(reader["Losses"]);
-                                }
-                            }
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("SQL Error (GetUser): " + ex.Message);
-                }
-
-                return user;
-            }
-
-            // Hàm lấy User bằng Email (cho chức năng quên mật khẩu)
-            public static User GetUserByEmail(string email)
-            {
-                User user = null;
-                try
-                {
-                    using (SqlConnection conn = new SqlConnection(connectionString))
-                    {
-                        conn.Open();
-                        string query = "SELECT * FROM Users WHERE Email = @e";
-
-                        using (SqlCommand cmd = new SqlCommand(query, conn))
-                        {
-                            cmd.Parameters.AddWithValue("@e", email);
-                            using (SqlDataReader reader = cmd.ExecuteReader())
-                            {
-                                if (reader.Read())
-                                {
-                                    user = new User();
-                                    user.Username = reader["Username"].ToString();
-                                    user.Password = reader["Password"].ToString();
-                                    user.Email = reader["Email"].ToString();
-                                    user.Rank = reader["Rank"].ToString();
-                                    user.Wins = Convert.ToInt32(reader["Wins"]);
-                                    user.Losses = Convert.ToInt32(reader["Losses"]);
-                                }
-                            }
-                        }
-                    }
-                }
-                catch (Exception ex) { Console.WriteLine("SQL Error: " + ex.Message); }
-                return user;
-            }
-
-            // Hàm đăng ký (Insert vào SQL)
-            public static bool Register(string username, string password)
-            {
-                // Kiểm tra xem user đã tồn tại chưa
-                if (GetUser(username) != null) return false;
-
-                try
-                {
-                    using (SqlConnection conn = new SqlConnection(connectionString))
-                    {
-                        conn.Open();
-                        string query = @"INSERT INTO Users (Username, Password, Email, Rank, Wins, Losses) 
-                                         VALUES (@u, @p, @e, 'Newbie', 0, 0)";
-
-                        using (SqlCommand cmd = new SqlCommand(query, conn))
-                        {
-                            cmd.Parameters.AddWithValue("@u", username);
-                            cmd.Parameters.AddWithValue("@p", password);
-                            cmd.Parameters.AddWithValue("@e", username + "@game.com"); // Email tạm
-
-                            cmd.ExecuteNonQuery(); // Thực thi lệnh Insert
-                            return true;
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("SQL Error (Register): " + ex.Message);
-                    return false;
-                }
-            }
-
-            // Hàm cập nhật mật khẩu mới (dùng cho Reset Pass)
-            public static void UpdatePassword(string username, string newPass)
-            {
-                try
-                {
-                    using (SqlConnection conn = new SqlConnection(connectionString))
-                    {
-                        conn.Open();
-                        string query = "UPDATE Users SET Password = @p WHERE Username = @u";
-                        using (SqlCommand cmd = new SqlCommand(query, conn))
-                        {
-                            cmd.Parameters.AddWithValue("@p", newPass);
-                            cmd.Parameters.AddWithValue("@u", username);
-                            cmd.ExecuteNonQuery();
-                        }
-                    }
-                }
-                catch (Exception ex) { Console.WriteLine("Update Pass Error: " + ex.Message); }
-            }
-        }
-
-        // ============================================================
-        // 2. AUTH (Chức năng Reset Pass - Có cập nhật để lưu vào DB)
-        // ============================================================
+        // ======================================================
+        //  AUTHENTICATION SERVICES
+        // ======================================================
         public static class Auth
         {
-            // Vẫn lưu Token tạm trên RAM (vì token chỉ sống ngắn hạn)
             private static Dictionary<string, string> _resetTokens = new Dictionary<string, string>();
 
-            public static async Task<bool> HandleForgotPassword(string email)
+            // SHA256 hashing (C# 7.3 compatible)
+            public static string HashPassword(string password)
             {
-                await Task.Delay(50); // Giả lập mạng
+                using (var sha = SHA256.Create())
+                {
+                    byte[] bytes = Encoding.UTF8.GetBytes(password);
+                    byte[] hash = sha.ComputeHash(bytes);
+                    return BytesToHex(hash);
+                }
+            }
 
-                // Check SQL xem email có tồn tại không
+            // Convert bytes → hex string (replacement for Convert.ToHexString)
+            private static string BytesToHex(byte[] data)
+            {
+                StringBuilder sb = new StringBuilder(data.Length * 2);
+                for (int i = 0; i < data.Length; i++)
+                    sb.Append(data[i].ToString("X2"));
+                return sb.ToString();
+            }
+
+            public static async Task<bool> HandleForgotPasswordAsync(string email)
+            {
+                await Task.Delay(30);
+
                 var user = Database.GetUserByEmail(email);
-                if (user == null) return true; // Fake success để bảo mật
+                if (user == null)
+                    return true; // hide existence
 
-                string token = "123456"; // Mã cố định để test
+                string token = new Random().Next(100000, 999999).ToString();
 
-                if (_resetTokens.ContainsKey(email)) _resetTokens[email] = token;
-                else _resetTokens.Add(email, token);
+                lock (_resetTokens)
+                {
+                    _resetTokens[email] = token;
+                }
 
-                Console.WriteLine($"[SQL-AUTH] Token for {email}: {token}");
+                Console.WriteLine("[RESET TOKEN] " + email + " => " + token);
+
+                // Production: send via email
                 return true;
             }
 
             public static bool HandleResetVerification(string email, string token, string newPassword)
             {
-                if (_resetTokens.ContainsKey(email) && _resetTokens[email] == token)
+                lock (_resetTokens)
                 {
-                    var user = Database.GetUserByEmail(email);
-                    if (user != null)
-                    {
-                        // CẬP NHẬT MẬT KHẨU VÀO SQL
-                        Database.UpdatePassword(user.Username, newPassword);
+                    if (!_resetTokens.ContainsKey(email))
+                        return false;
 
-                        _resetTokens.Remove(email);
-                        return true;
+                    if (_resetTokens[email] != token)
+                        return false;
+
+                    _resetTokens.Remove(email);
+                }
+
+                var user = Database.GetUserByEmail(email);
+                if (user == null) return false;
+
+                string hash = HashPassword(newPassword);
+                Database.UpdatePassword(user.Username, hash);
+
+                return true;
+            }
+        }
+
+        // ======================================================
+        //  DATABASE ACCESS
+        // ======================================================
+        public static class Database
+        {
+            private static string _conn = @"Server=.;Database=HappyCaroDB;Integrated Security=True;";
+
+            public class DbUser
+            {
+                public int Id;
+                public string Username;
+                public string PasswordHash;
+                public string Email;
+                public int RankPoint;
+                public int Wins;
+                public int Losses;
+                public int Draws;
+            }
+
+            // =========================================
+            // GET USER BY USERNAME
+            // =========================================
+            public static DbUser GetUser(string username)
+            {
+                SqlConnection conn = null;
+                try
+                {
+                    conn = new SqlConnection(_conn);
+                    conn.Open();
+
+                    string q = "SELECT TOP 1 * FROM Users WHERE Username = @u";
+                    SqlCommand cmd = new SqlCommand(q, conn);
+                    cmd.Parameters.AddWithValue("@u", username);
+
+                    SqlDataReader r = cmd.ExecuteReader();
+                    if (r.Read())
+                    {
+                        return new DbUser
+                        {
+                            Id = Convert.ToInt32(r["Id"]),
+                            Username = r["Username"].ToString(),
+                            PasswordHash = r["PasswordHash"].ToString(),
+                            Email = r["Email"].ToString(),
+                            RankPoint = Convert.ToInt32(r["RankPoint"]),
+                            Wins = Convert.ToInt32(r["Wins"]),
+                            Losses = Convert.ToInt32(r["Losses"]),
+                            Draws = Convert.ToInt32(r["Draws"])
+                        };
                     }
                 }
-                return false;
+                catch (Exception ex)
+                {
+                    Console.WriteLine("DB:GetUser " + ex.Message);
+                }
+                finally
+                {
+                    if (conn != null) conn.Dispose();
+                }
+                return null;
+            }
+
+            // =========================================
+            // GET USER BY EMAIL
+            // =========================================
+            public static DbUser GetUserByEmail(string email)
+            {
+                SqlConnection conn = null;
+                try
+                {
+                    conn = new SqlConnection(_conn);
+                    conn.Open();
+
+                    string q = "SELECT TOP 1 * FROM Users WHERE Email = @e";
+                    SqlCommand cmd = new SqlCommand(q, conn);
+                    cmd.Parameters.AddWithValue("@e", email);
+
+                    SqlDataReader r = cmd.ExecuteReader();
+                    if (r.Read())
+                    {
+                        return new DbUser
+                        {
+                            Id = Convert.ToInt32(r["Id"]),
+                            Username = r["Username"].ToString(),
+                            PasswordHash = r["PasswordHash"].ToString(),
+                            Email = r["Email"].ToString(),
+                            RankPoint = Convert.ToInt32(r["RankPoint"]),
+                            Wins = Convert.ToInt32(r["Wins"]),
+                            Losses = Convert.ToInt32(r["Losses"]),
+                            Draws = Convert.ToInt32(r["Draws"])
+                        };
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("DB:GetUserByEmail " + ex.Message);
+                }
+                finally
+                {
+                    if (conn != null) conn.Dispose();
+                }
+                return null;
+            }
+
+            // =========================================
+            // REGISTER USER
+            // =========================================
+            public static bool Register(string username, string passwordHash)
+            {
+                SqlConnection conn = null;
+                try
+                {
+                    conn = new SqlConnection(_conn);
+                    conn.Open();
+
+                    string q = @"INSERT INTO Users 
+                    (Username, PasswordHash, Email, RankPoint, Wins, Losses, Draws) 
+                    VALUES (@u, @p, @e, 1000, 0, 0, 0)";
+
+                    SqlCommand cmd = new SqlCommand(q, conn);
+                    cmd.Parameters.AddWithValue("@u", username);
+                    cmd.Parameters.AddWithValue("@p", passwordHash);
+                    cmd.Parameters.AddWithValue("@e", username + "@game.com");
+                    cmd.ExecuteNonQuery();
+
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("DB:Register " + ex.Message);
+                    return false;
+                }
+                finally
+                {
+                    if (conn != null) conn.Dispose();
+                }
+            }
+
+            // =========================================
+            // UPDATE PASSWORD
+            // =========================================
+            public static void UpdatePassword(string username, string passwordHash)
+            {
+                SqlConnection conn = null;
+                try
+                {
+                    conn = new SqlConnection(_conn);
+                    conn.Open();
+
+                    string q = "UPDATE Users SET PasswordHash = @p WHERE Username = @u";
+                    SqlCommand cmd = new SqlCommand(q, conn);
+                    cmd.Parameters.AddWithValue("@p", passwordHash);
+                    cmd.Parameters.AddWithValue("@u", username);
+                    cmd.ExecuteNonQuery();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("DB:UpdatePassword " + ex.Message);
+                }
+                finally
+                {
+                    if (conn != null) conn.Dispose();
+                }
+            }
+
+            // =========================================
+            // CREATE MATCH
+            // =========================================
+            public static int CreateMatch(string playerX, string playerO)
+            {
+                SqlConnection conn = null;
+                try
+                {
+                    conn = new SqlConnection(_conn);
+                    conn.Open();
+
+                    string q = @"INSERT INTO Matches (RoomId, PlayerXId, PlayerOId, StartedAt)
+                                 OUTPUT INSERTED.Id 
+                                 VALUES (0, @px, @po, GETDATE())";
+
+                    SqlCommand cmd = new SqlCommand(q, conn);
+                    cmd.Parameters.AddWithValue("@px", GetUserId(playerX));
+                    cmd.Parameters.AddWithValue("@po", GetUserId(playerO));
+
+                    object id = cmd.ExecuteScalar();
+                    return Convert.ToInt32(id);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("DB:CreateMatch " + ex.Message);
+                    return 0;
+                }
+                finally
+                {
+                    if (conn != null) conn.Dispose();
+                }
+            }
+
+            // =========================================
+            // SAVE MOVE
+            // =========================================
+            public static async Task SaveMove(int matchId, string username, int x, int y, int stepNumber)
+            {
+                SqlConnection conn = null;
+                try
+                {
+                    conn = new SqlConnection(_conn);
+                    await conn.OpenAsync();
+
+                    string q = @"INSERT INTO Moves (MatchId, PlayerId, X, Y, StepNumber, CreatedAt)
+                                 VALUES (@m, @pid, @x, @y, @s, GETDATE())";
+
+                    SqlCommand cmd = new SqlCommand(q, conn);
+                    cmd.Parameters.AddWithValue("@m", matchId);
+                    cmd.Parameters.AddWithValue("@pid", GetUserId(username));
+                    cmd.Parameters.AddWithValue("@x", x);
+                    cmd.Parameters.AddWithValue("@y", y);
+                    cmd.Parameters.AddWithValue("@s", stepNumber);
+
+                    await cmd.ExecuteNonQueryAsync();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("DB:SaveMove " + ex.Message);
+                }
+                finally
+                {
+                    if (conn != null) conn.Dispose();
+                }
+            }
+
+            // =========================================
+            // SAVE MATCH
+            // =========================================
+            public static async Task SaveMatch(string playerX, string playerO, string winnerUsername, string endReason)
+            {
+                SqlConnection conn = null;
+                try
+                {
+                    conn = new SqlConnection(_conn);
+                    await conn.OpenAsync();
+
+                    string q = @"INSERT INTO Matches (RoomId, PlayerXId, PlayerOId, WinnerId, EndReason, StartedAt, EndedAt)
+                                 VALUES (0, @px, @po, @w, @r, GETDATE(), GETDATE())";
+
+                    SqlCommand cmd = new SqlCommand(q, conn);
+                    cmd.Parameters.AddWithValue("@px", GetUserId(playerX));
+                    cmd.Parameters.AddWithValue("@po", GetUserId(playerO));
+
+                    if (string.IsNullOrEmpty(winnerUsername))
+                        cmd.Parameters.AddWithValue("@w", DBNull.Value);
+                    else
+                        cmd.Parameters.AddWithValue("@w", GetUserId(winnerUsername));
+
+                    cmd.Parameters.AddWithValue("@r", endReason ?? "");
+
+                    await cmd.ExecuteNonQueryAsync();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("DB:SaveMatch " + ex.Message);
+                }
+                finally
+                {
+                    if (conn != null) conn.Dispose();
+                }
+            }
+
+            // =========================================
+            // UPDATE USER STATS
+            // =========================================
+            public static void UpdateUserStats(string username, int deltaRank, bool isWinner)
+            {
+                SqlConnection conn = null;
+                try
+                {
+                    conn = new SqlConnection(_conn);
+                    conn.Open();
+
+                    string q = @"UPDATE Users
+                                 SET RankPoint = RankPoint + @dr,
+                                     Wins = Wins + @w,
+                                     Losses = Losses + @l,
+                                     Draws = Draws + @d
+                                 WHERE Username = @u";
+
+                    SqlCommand cmd = new SqlCommand(q, conn);
+                    cmd.Parameters.AddWithValue("@dr", deltaRank);
+                    cmd.Parameters.AddWithValue("@w", isWinner ? 1 : 0);
+                    cmd.Parameters.AddWithValue("@l", isWinner ? 0 : 1);
+                    cmd.Parameters.AddWithValue("@d", 0);
+                    cmd.Parameters.AddWithValue("@u", username);
+
+                    cmd.ExecuteNonQuery();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("DB:UpdateUserStats " + ex.Message);
+                }
+                finally
+                {
+                    if (conn != null) conn.Dispose();
+                }
+            }
+
+            // =========================================
+            // GET RANKING
+            // =========================================
+            public static List<DbUser> GetRanking()
+            {
+                List<DbUser> list = new List<DbUser>();
+                SqlConnection conn = null;
+
+                try
+                {
+                    conn = new SqlConnection(_conn);
+                    conn.Open();
+
+                    string q = "SELECT TOP 100 * FROM Users ORDER BY RankPoint DESC, Wins DESC";
+                    SqlCommand cmd = new SqlCommand(q, conn);
+
+                    SqlDataReader r = cmd.ExecuteReader();
+                    while (r.Read())
+                    {
+                        DbUser u = new DbUser();
+                        u.Id = Convert.ToInt32(r["Id"]);
+                        u.Username = r["Username"].ToString();
+                        u.Email = r["Email"].ToString();
+                        u.RankPoint = Convert.ToInt32(r["RankPoint"]);
+                        u.Wins = Convert.ToInt32(r["Wins"]);
+                        u.Losses = Convert.ToInt32(r["Losses"]);
+                        u.Draws = Convert.ToInt32(r["Draws"]);
+                        list.Add(u);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("DB:GetRanking " + ex.Message);
+                }
+                finally
+                {
+                    if (conn != null) conn.Dispose();
+                }
+
+                return list;
+            }
+
+            // =========================================
+            // GET TOP RANK X USERS
+            // =========================================
+            public static List<DbUser> GetTopRank(int limit)
+            {
+                List<DbUser> list = new List<DbUser>();
+                SqlConnection conn = null;
+
+                try
+                {
+                    conn = new SqlConnection(_conn);
+                    conn.Open();
+
+                    string q = "SELECT TOP (@lim) * FROM Users ORDER BY RankPoint DESC";
+                    SqlCommand cmd = new SqlCommand(q, conn);
+                    cmd.Parameters.AddWithValue("@lim", limit);
+
+                    SqlDataReader r = cmd.ExecuteReader();
+                    while (r.Read())
+                    {
+                        DbUser u = new DbUser();
+                        u.Id = Convert.ToInt32(r["Id"]);
+                        u.Username = r["Username"].ToString();
+                        u.Email = r["Email"].ToString();
+                        u.RankPoint = Convert.ToInt32(r["RankPoint"]);
+                        u.Wins = Convert.ToInt32(r["Wins"]);
+                        u.Losses = Convert.ToInt32(r["Losses"]);
+                        u.Draws = Convert.ToInt32(r["Draws"]);
+                        list.Add(u);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("DB:GetTopRank " + ex.Message);
+                }
+                finally
+                {
+                    if (conn != null) conn.Dispose();
+                }
+
+                return list;
+            }
+
+            // =========================================
+            // GET USER ID
+            // =========================================
+            private static int GetUserId(string username)
+            {
+                if (string.IsNullOrEmpty(username))
+                    return 0;
+
+                SqlConnection conn = null;
+                try
+                {
+                    conn = new SqlConnection(_conn);
+                    conn.Open();
+
+                    string q = "SELECT Id FROM Users WHERE Username = @u";
+                    SqlCommand cmd = new SqlCommand(q, conn);
+                    cmd.Parameters.AddWithValue("@u", username);
+
+                    object res = cmd.ExecuteScalar();
+                    if (res == null)
+                        return 0;
+
+                    return Convert.ToInt32(res);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("DB:GetUserId " + ex.Message);
+                    return 0;
+                }
+                finally
+                {
+                    if (conn != null) conn.Dispose();
+                }
             }
         }
     }

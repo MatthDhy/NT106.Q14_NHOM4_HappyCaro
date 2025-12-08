@@ -1,180 +1,161 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using System.Collections.Concurrent;
+using System.Threading.Tasks;
 
 namespace Client
 {
-    public class TcpClientHelper
+    public class TcpClientHelper : IDisposable
     {
         private TcpClient _client;
         private NetworkStream _stream;
-        private Thread _receiveThread;
-        private Thread _heartbeatThread;
+        private readonly ConcurrentQueue<byte[]> _sendQueue = new ConcurrentQueue<byte[]>();
+        private CancellationTokenSource _cts = new CancellationTokenSource();
+        private Task _sendTask;
+        private Task _receiveTask;
+        private Task _heartbeatTask;
 
-        private readonly ConcurrentQueue<string> _sendQueue = new();
-        private readonly CancellationTokenSource _cts = new();
+        public event Action<MessageEnvelope> OnEnvelopeReceived;
+        public event Action OnConnected;
+        public event Action OnDisconnected;
+        public bool IsConnected => _client?.Connected ?? false;
 
-        private bool _isConnected = false;
         private string _serverIp;
         private int _serverPort;
 
-        // ========= CALLBACK =============
-        public event Action<string> OnMessageReceived;
-        public event Action OnDisconnected;
-        public event Action OnConnected;
-
-        // ========= LOGGING =============
-        private readonly string _logPath = "client-log.txt";
-
-        // ========= CONNECT =============
         public void Connect(string ip, int port)
         {
-            _serverIp = ip;
-            _serverPort = port;
-
-            ThreadPool.QueueUserWorkItem(_ =>
+            _serverIp = ip; _serverPort = port;
+            _ = Task.Run(async () =>
             {
                 while (!_cts.IsCancellationRequested)
                 {
                     try
                     {
-                        Log("Connecting...");
                         _client = new TcpClient();
-                        _client.Connect(ip, port);
+                        await _client.ConnectAsync(ip, port);
                         _stream = _client.GetStream();
-
-                        _isConnected = true;
                         OnConnected?.Invoke();
 
-                        StartReceiving();
-                        StartHeartbeat();
-                        StartSendWorker();
+                        _sendTask = Task.Run(SendLoop);
+                        _receiveTask = Task.Run(ReceiveLoop);
+                        _heartbeatTask = Task.Run(HeartbeatLoop);
 
-                        Log("Connected");
                         break;
                     }
                     catch
                     {
-                        Log("Connect failed. Retry in 3s...");
-                        Thread.Sleep(3000);
+                        await Task.Delay(3000);
                     }
                 }
             });
         }
 
-        // ========= QUEUE BASED SEND =============
-        public void Send(string message)
+        public void EnqueueSend(MessageEnvelope env)
         {
-            if (!_isConnected) return;
-            _sendQueue.Enqueue(message);
+            string json = JsonHelper.Serialize(env);
+            var body = Encoding.UTF8.GetBytes(json);
+            var prefix = BitConverter.GetBytes(body.Length);
+            var packet = new byte[prefix.Length + body.Length];
+            Buffer.BlockCopy(prefix, 0, packet, 0, prefix.Length);
+            Buffer.BlockCopy(body, 0, packet, prefix.Length, body.Length);
+            _sendQueue.Enqueue(packet);
         }
 
-        private void StartSendWorker()
+        private async Task SendLoop()
         {
-            ThreadPool.QueueUserWorkItem(_ =>
+            while (!_cts.IsCancellationRequested && _client?.Connected == true)
             {
-                while (_isConnected && !_cts.IsCancellationRequested)
+                try
                 {
-                    if (_sendQueue.TryDequeue(out string msg))
+                    if (_sendQueue.TryDequeue(out var pkt))
                     {
-                        try
-                        {
-                            byte[] data = Encoding.UTF8.GetBytes(msg + "\n");
-                            _stream.Write(data, 0, data.Length);
-                        }
-                        catch
-                        {
-                            Log("Send failed.");
-                            TriggerDisconnect();
-                        }
+                        await _stream.WriteAsync(pkt, 0, pkt.Length, _cts.Token);
                     }
-
-                    Thread.Sleep(10);
+                    else await Task.Delay(10, _cts.Token);
                 }
-            });
+                catch
+                {
+                    TriggerDisconnect();
+                }
+            }
         }
 
-        // ========= RECEIVING =============
-        private void StartReceiving()
+        private async Task ReceiveLoop()
         {
-            _receiveThread = new Thread(() =>
+            try
             {
-                byte[] buffer = new byte[4096];
-
-                while (_isConnected && !_cts.IsCancellationRequested)
+                var lenBuf = new byte[4];
+                while (!_cts.IsCancellationRequested && _client?.Connected == true)
                 {
+                    int read = 0;
+                    while (read < 4)
+                    {
+                        int r = await _stream.ReadAsync(lenBuf, read, 4 - read, _cts.Token);
+                        if (r == 0) { TriggerDisconnect(); return; }
+                        read += r;
+                    }
+
+                    int len = BitConverter.ToInt32(lenBuf, 0);
+                    if (len <= 0) continue;
+
+                    var body = new byte[len];
+                    int total = 0;
+                    while (total < len)
+                    {
+                        int r = await _stream.ReadAsync(body, total, len - total, _cts.Token);
+                        if (r == 0) { TriggerDisconnect(); return; }
+                        total += r;
+                    }
+
+                    var json = Encoding.UTF8.GetString(body);
                     try
                     {
-                        int bytes = _stream.Read(buffer, 0, buffer.Length);
-                        if (bytes <= 0)
-                        {
-                            TriggerDisconnect();
-                            break;
-                        }
-
-                        string message = Encoding.UTF8.GetString(buffer, 0, bytes).Trim();
-                        UIInvoke(() => OnMessageReceived?.Invoke(message));
+                        var env = JsonHelper.Deserialize<MessageEnvelope>(json);
+                        OnEnvelopeReceived?.Invoke(env);
                     }
                     catch
                     {
-                        TriggerDisconnect();
+                        // ignore malformed
                     }
                 }
-            });
-
-            _receiveThread.IsBackground = true;
-            _receiveThread.Start();
-        }
-
-        // ========= HEARTBEAT ============
-        private void StartHeartbeat()
-        {
-            _heartbeatThread = new Thread(() =>
+            }
+            catch
             {
-                while (_isConnected && !_cts.IsCancellationRequested)
-                {
-                    Send("{\"type\":\"PING\"}");
-                    Thread.Sleep(3000);
-                }
-            });
-
-            _heartbeatThread.IsBackground = true;
-            _heartbeatThread.Start();
+                TriggerDisconnect();
+            }
         }
 
-        // ========= DISCONNECT ============
+        private async Task HeartbeatLoop()
+        {
+            while (!_cts.IsCancellationRequested && _client?.Connected == true)
+            {
+                try
+                {
+                    EnqueueSend(new MessageEnvelope { Type = MessageType.PING, Payload = "" });
+                    await Task.Delay(3000, _cts.Token);
+                }
+                catch { await Task.Delay(3000); }
+            }
+        }
+
         private void TriggerDisconnect()
         {
-            if (!_isConnected) return;
+            try { _cts.Cancel(); } catch { }
+            try { _client?.Close(); } catch { }
+            OnDisconnected?.Invoke();
 
-            _isConnected = false;
-            Log("Disconnected");
-
-            UIInvoke(() => OnDisconnected?.Invoke());
-
-            Connect(_serverIp, _serverPort); // AUTO RECONNECT
+            // attempt reconnect
+            _cts = new CancellationTokenSource();
+            Task.Delay(1000).ContinueWith(_ => Connect(_serverIp, _serverPort));
         }
 
-        // ========= UI SAFE INVOKE ============
-        private void UIInvoke(Action action)
+        public void Dispose()
         {
-            if (System.Windows.Forms.Application.OpenForms.Count > 0)
-            {
-                var form = System.Windows.Forms.Application.OpenForms[0];
-                if (form.InvokeRequired)
-                    form.BeginInvoke(action);
-                else
-                    action();
-            }
-            else action();
-        }
-
-        // ========= LOGGING =============
-        private void Log(string msg)
-        {
-            File.AppendAllText(_logPath, $"[{DateTime.Now}] {msg}\n");
+            try { _cts.Cancel(); } catch { }
+            try { _client?.Close(); } catch { }
         }
     }
 }

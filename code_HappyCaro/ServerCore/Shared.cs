@@ -1,152 +1,69 @@
-﻿using ServerCore.ServerCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System;
 using System.Text.Json;
-using System.Threading.Tasks;
+using System.Text.Json.Serialization;
 
-namespace ServerCore
+namespace ServerCore.ServerCore
 {
     public enum MessageType
     {
-        // ===============================
-        // AUTHENTICATION
-        // ===============================
+        // AUTH
         AUTH_LOGIN,
         AUTH_LOGIN_OK,
         AUTH_LOGIN_FAIL,
-
         AUTH_REGISTER,
         AUTH_REGISTER_OK,
         AUTH_REGISTER_FAIL,
-
         AUTH_LOGOUT,
         AUTH_LOGOUT_OK,
-
         AUTH_RESET_REQUEST,
         AUTH_RESET_OK,
         AUTH_RESET_FAIL,
-
         AUTH_RESET_VERIFY,
         AUTH_RESET_VERIFY_OK,
         AUTH_RESET_VERIFY_FAIL,
 
-
-        // ===============================
-        // ROOM SYSTEM
-        // ===============================
+        // ROOMS
         ROOM_CREATE,
         ROOM_CREATE_OK,
         ROOM_CREATE_FAIL,
-
         ROOM_JOIN,
         ROOM_JOIN_OK,
         ROOM_JOIN_FAIL,
-
         ROOM_LEAVE,
         ROOM_LEAVE_OK,
+        ROOM_LIST,
+        ROOM_UPDATE,
 
-        ROOM_LIST,          // yêu cầu list phòng
-        ROOM_UPDATE,        // cập nhật danh sách phòng (server đẩy xuống client)
-
-
-        // ===============================
-        // GAME SYSTEM
-        // ===============================
-        GAME_MOVE,          // người chơi đánh 1 nước
-        GAME_UPDATE,        // server broadcast cập nhật nước đi
-        GAME_END,           // ván cờ kết thúc
-        GAME_SURRENDER,     // người chơi đầu hàng
+        // GAME
+        GAME_MOVE,
+        GAME_UPDATE,
+        GAME_END,
+        GAME_SURRENDER,
         GAME_SURRENDER_OK,
         GAME_SURRENDER_RECV,
+        REQUEST_RANKING,
+        RANKING_DATA,
 
-
-        // ===============================
-        // CHAT (in-room chat)
-        // ===============================
+        // CHAT
         CHAT_SEND,
         CHAT_RECV,
 
-        // ===============================
-        // HEARTBEAT (PING - PONG)
-        // ===============================
+        // HEARTBEAT
         PING,
         PONG,
 
-        // ===============================
-        // GENERAL / ERROR
-        // ===============================
+        // GENERAL
         ERROR
     }
 
-
     public class MessageEnvelope
     {
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public MessageType Type { get; set; }
-        public string Payload { get; set; } // JSON string
+        // Payload is always a JSON string (may be "null" or "{}")
+        public string Payload { get; set; }
     }
 
-    public class User
-    {
-        public int Id { get; set; }
-        public string Username { get; set; }
-        public string Password { get; set; }
-        public string Email { get; set; }
-        public int RankPoint { get; set; }
-    }
-
-    public class Match
-    {
-        public int Id { get; set; }
-        public int Player1 { get; set; }
-        public int Player2 { get; set; }
-        public int Winner { get; set; }
-        public DateTime PlayedAt { get; set; }
-    }
-
-    public class Friend
-    {
-        public int UserId { get; set; }
-        public int FriendId { get; set; }
-        public string Status { get; set; }
-    }
-
-    public static class JsonHelper
-    {
-        public static string Serialize(object obj)
-        {
-            return JsonSerializer.Serialize(obj);
-        }
-
-        public static T Deserialize<T>(string json)
-        {
-            return JsonSerializer.Deserialize<T>(json);
-        }
-    }
-
-    public class Room
-    {
-        public int Id { get; set; }
-        public ClientConnection Player1 { get; set; } // Luôn là 'X' (1)
-        public ClientConnection Player2 { get; set; } // Luôn là 'O' (2)
-
-        public ClientConnection CurrentPlayer { get; set; } // Thêm: Người chơi hiện tại
-
-        public string Status { get; set; } // WAITING / PLAYING / FINISHED
-
-        public readonly object Lock = new object();
-
-        public int BoardSize { get; set; } = 15;
-        public int[,] Board { get; set; } = new int[15, 15];
-        public Room()
-        {
-            // Thiết lập mặc định khi tạo Room
-            Board = new int[BoardSize, BoardSize];
-            // Player1 đi trước
-            CurrentPlayer = Player1;
-        }
-    }
     public class MovePayload
     {
         public int roomId { get; set; }
@@ -154,7 +71,6 @@ namespace ServerCore
         public int y { get; set; }
     }
 
-    //payload cho việc lấy lại mật khẩu
     public class AuthRequestPayload
     {
         public string Email { get; set; }
@@ -164,6 +80,29 @@ namespace ServerCore
     {
         public string Email { get; set; }
         public string Token { get; set; }
-        public string NewPassword { get; set; } // Mật khẩu plaintext từ client
+        public string NewPassword { get; set; }
+    }
+
+    public class RankingItem
+    {
+        public string username { get; set; }
+        public int rank { get; set; }
+        public int wins { get; set; }
+        public int losses { get; set; }
+        public int draws { get; set; }
+    }
+
+    public static class JsonHelper
+    {
+        public static readonly JsonSerializerOptions Options = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            WriteIndented = false,
+            Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
+        };
+
+        public static string Serialize(object obj) => JsonSerializer.Serialize(obj, Options);
+        public static T Deserialize<T>(string json) => JsonSerializer.Deserialize<T>(json, Options);
+        public static object Deserialize(string json, Type type) => JsonSerializer.Deserialize(json, type, Options);
     }
 }

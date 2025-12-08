@@ -1,108 +1,130 @@
-﻿using ServerCore.ServerCore;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
-namespace ServerCore
+namespace ServerCore.ServerCore
 {
-    internal class Server
+    public class Server
     {
-        private TcpListener listener;
-        private int port;
-        private bool isRunning;
+        private TcpListener _listener;
+        private readonly int _port;
+        private CancellationTokenSource _cts;
+        private Task _acceptTask;
 
         public static Action<string> OnLog;
         public static Action OnClientListChanged;
         public static Action OnRoomListChanged;
+
+        public static List<ClientConnection> Clients { get; } = new List<ClientConnection>();
+
+        public bool IsRunning { get; private set; }
+
         public Server(int port)
         {
-            this.port = port;
+            _port = port;
         }
 
         public void Start()
         {
+            if (IsRunning) return;
+
             try
             {
-                listener = new TcpListener(IPAddress.Any, port);
-                listener.Start();
-                isRunning = true;
+                _cts = new CancellationTokenSource();
+                _listener = new TcpListener(IPAddress.Any, _port);
+                _listener.Start();
+                IsRunning = true;
 
-                Log($"Server started on port {port}");
-                AcceptLoop();
+                Log($"Server started on port {_port}");
+                _acceptTask = Task.Run(() => AcceptLoopAsync(_cts.Token));
             }
             catch (Exception ex)
             {
-                Log("Server start failed: " + ex.Message);
+                Log($"Server start failed: {ex.Message}");
             }
         }
 
         public void Stop()
         {
+            if (!IsRunning) return;
+
             try
             {
-                isRunning = false;
-                listener.Stop();
+                _cts.Cancel();
+                _listener.Stop();
+                IsRunning = false;
+
+                // Disconnect all clients
+                lock (Clients)
+                {
+                    foreach (var c in Clients.ToArray())
+                    {
+                        try { c.ForceDisconnect(); } catch { }
+                    }
+                    Clients.Clear();
+                }
 
                 Log("Server stopped.");
+                OnClientListChanged?.Invoke();
             }
             catch (Exception ex)
             {
-                Log("Error stopping server: " + ex.Message);
+                Log($"Error stopping server: {ex.Message}");
             }
         }
-        private async Task AcceptLoop()
+
+        private async Task AcceptLoopAsync(CancellationToken token)
         {
-            while (isRunning)
+            while (!token.IsCancellationRequested)
             {
                 try
                 {
-                    var tcp = await listener.AcceptTcpClientAsync();
-                    Log("Client connected: " + tcp.Client.RemoteEndPoint);
+                    var tcp = await _listener.AcceptTcpClientAsync();
+                    Log($"Client connected: {tcp.Client.RemoteEndPoint}");
 
-                    // ClientConnection constructor sẽ tự động thêm client vào AllClients với lock
-                    new ClientConnection(tcp);
-
+                    // Create client connection (it will add itself to Clients)
+                    var cc = new ClientConnection(tcp);
                     OnClientListChanged?.Invoke();
                 }
-                catch (Exception ex) // Bắt Exception để tránh crash server
+                catch (ObjectDisposedException) { break; }
+                catch (Exception ex)
                 {
-                    if (!isRunning) return;
-                    Log("Accept error: " + ex.Message);
+                    if (token.IsCancellationRequested) break;
+                    Log($"Accept error: {ex.Message}");
                 }
             }
         }
+
         public static void Log(string msg)
         {
-            Console.WriteLine(msg);
-            OnLog?.Invoke(msg);
+            Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] {msg}");
+            try { OnLog?.Invoke(msg); } catch { }
         }
 
-        public static void Broadcast(object data)
+        public static void Broadcast(MessageEnvelope env)
         {
-            string json = JsonHelper.Serialize(data);
-            byte[] bytes = Encoding.UTF8.GetBytes(json);
+            string json = JsonHelper.Serialize(env);
+            byte[] body = Encoding.UTF8.GetBytes(json);
+            byte[] prefix = BitConverter.GetBytes(body.Length);
 
-            // BẮT BUỘC: DUYỆT QUA DANH SÁCH CLIENT PHẢI CÓ LOCK
-            lock (ClientConnection.AllClients)
+            lock (Clients)
             {
-                foreach (var c in ClientConnection.AllClients)
+                foreach (var c in Clients.ToArray())
                 {
                     try
                     {
-                        c.Send(data); // Hàm Send đã được tối ưu
+                        c.SendRaw(prefix, body);
                     }
                     catch (Exception ex)
                     {
-                        Server.Log($"Broadcast send error to {c.Username}: {ex.Message}");
-                        // Có thể thêm logic để ngắt kết nối client này nếu lỗi
+                        Log($"Broadcast error to {c.Username}: {ex.Message}");
                     }
                 }
             }
         }
-
     }
 }

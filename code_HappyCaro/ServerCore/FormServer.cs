@@ -1,20 +1,114 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
+﻿using ServerCore.ServerCore;
+using System;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Net;
 using System.Windows.Forms;
 
 namespace ServerCore
 {
     public partial class FormServer : Form
     {
+        private Server _server;
+
         public FormServer()
         {
             InitializeComponent();
+            LoadIPAddress();
+
+            Server.OnLog = Log;
+            Server.OnClientListChanged = RefreshClientList;
+            RoomManager.OnRoomListChanged = RefreshRoomList;
         }
+
+        private void LoadIPAddress()
+        {
+            lblIP.Text = Dns.GetHostEntry(Dns.GetHostName())
+                           .AddressList.FirstOrDefault(ip =>
+                                ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)?
+                           .ToString()
+                           ?? "127.0.0.1";
+        }
+
+        private void btnStart_Click(object sender, EventArgs e)
+        {
+            if (!int.TryParse(txtPort.Text, out int port))
+            {
+                Log("Invalid port.");
+                return;
+            }
+
+            _server = new Server(port);
+            _server.Start();
+
+            btnStart.Enabled = false;
+            btnStop.Enabled = true;
+
+            lblStatus.Text = "Status: RUNNING";
+            lblStatus.ForeColor = System.Drawing.Color.MediumSeaGreen;
+
+            Log($"Server started at {lblIP.Text}:{port}");
+        }
+
+        private void btnStop_Click(object sender, EventArgs e)
+        {
+            if (_server == null) return;
+
+            _server.Stop();
+
+            btnStart.Enabled = true;
+            btnStop.Enabled = false;
+
+            lblStatus.Text = "Status: STOPPED";
+            lblStatus.ForeColor = System.Drawing.Color.IndianRed;
+
+            listClients.Items.Clear();
+            listRooms.Items.Clear();
+
+            Log("Server stopped.");
+        }
+
+        private void Log(string msg)
+        {
+            if (InvokeRequired)
+            {
+                Invoke(new Action<string>(Log), msg);
+                return;
+            }
+
+            txtLog.AppendText($"[{DateTime.Now:HH:mm:ss}] {msg}\r\n");
+        }
+
+        public void RefreshClientList()
+        {
+            if (InvokeRequired)
+            {
+                Invoke(new Action(RefreshClientList));
+                return;
+            }
+
+            listClients.Items.Clear();
+
+            foreach (var c in Server.Clients)
+                listClients.Items.Add($"{c.Username ?? "(null)"} - {c.EndPoint}");
+        }
+
+        public void RefreshRoomList()
+        {
+            if (InvokeRequired)
+            {
+                Invoke(new Action(RefreshRoomList));
+                return;
+            }
+
+            var rms = GameCore.RoomManager.GetRoomSnapshot();
+
+            listRooms.Items.Clear();
+
+            foreach (var r in rms)
+                listRooms.Items.Add(
+                    $"Room {r.Id}: {r.Player1?.Username ?? "-"} vs {r.Player2?.Username ?? "-"} - {r.Status}"
+                );
+        }
+
     }
 }

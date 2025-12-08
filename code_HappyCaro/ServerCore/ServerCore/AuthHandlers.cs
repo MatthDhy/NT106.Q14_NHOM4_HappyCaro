@@ -1,124 +1,87 @@
-﻿using Server;
-using ServerCore.ServerCore;
-using System;
+﻿using System;
 
-namespace ServerCore
+namespace ServerCore.ServerCore
 {
     public static class AuthHandlers
     {
-        // =============================
-        // HANDLE LOGIN
-        // =============================
-        public static void HandleLogin(ClientConnection client, string payload)
+        public static void HandleLogin(ClientConnection client, string payloadJson)
         {
             try
             {
-                var data = JsonHelper.Deserialize<dynamic>(payload);
+                var data = JsonHelper.Deserialize<dynamic>(payloadJson);
+                string username = data?.GetProperty("username").GetString();
+                string password = data?.GetProperty("password").GetString();
 
-                string username = Convert.ToString(data.username);
-                string password = Convert.ToString(data.password);
+                if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+                {
+                    client.SendEnvelope(MessageType.AUTH_LOGIN_FAIL, JsonHelper.Serialize(new { ok = false, reason = "MissingFields" }));
+                    return;
+                }
 
-                // Kiểm tra trong database
                 var user = Services.Database.GetUser(username);
-
                 if (user == null)
                 {
-                    client.Send(new
-                    {
-                        Type = MessageType.AUTH_LOGIN_FAIL,
-                        Payload = new { ok = false, reason = "UserNotFound" }
-                    });
+                    client.SendEnvelope(MessageType.AUTH_LOGIN_FAIL, JsonHelper.Serialize(new { ok = false, reason = "UserNotFound" }));
                     return;
                 }
 
-                if (user.Password != password)
+                string hash = Services.Auth.HashPassword(password);
+                if (!string.Equals(hash, user.PasswordHash, StringComparison.Ordinal))
                 {
-                    client.Send(new
-                    {
-                        Type = MessageType.AUTH_LOGIN_FAIL,
-                        Payload = new { ok = false, reason = "WrongPassword" }
-                    });
+                    client.SendEnvelope(MessageType.AUTH_LOGIN_FAIL, JsonHelper.Serialize(new { ok = false, reason = "WrongPassword" }));
                     return;
                 }
 
-                // Lưu username vào ClientConnection
                 client.Username = username;
-
-                client.Send(new
-                {
-                    Type = MessageType.AUTH_LOGIN_OK,
-                    Payload = new
-                    {
-                        ok = true,
-                        username = username,
-                        rank = user.Rank,
-                        wins = user.Wins,
-                        losses = user.Losses
-                    }
-                });
-
+                client.SendEnvelope(MessageType.AUTH_LOGIN_OK, JsonHelper.Serialize(new { ok = true, username = username, rank = user.RankPoint, wins = user.Wins, losses = user.Losses, draws = user.Draws }));
                 Server.Log($"User LOGIN: {username}");
                 Server.OnClientListChanged?.Invoke();
             }
             catch (Exception ex)
             {
                 Server.Log($"Login Error: {ex.Message}");
+                client.SendEnvelope(MessageType.AUTH_LOGIN_FAIL, JsonHelper.Serialize(new { ok = false, reason = "ServerError" }));
             }
         }
 
-        // =============================
-        // HANDLE REGISTER
-        // =============================
-        public static void HandleRegister(ClientConnection client, string payload)
+        public static void HandleRegister(ClientConnection client, string payloadJson)
         {
             try
             {
-                var data = JsonHelper.Deserialize<dynamic>(payload);
+                var data = JsonHelper.Deserialize<dynamic>(payloadJson);
+                string username = data?.GetProperty("username").GetString();
+                string password = data?.GetProperty("password").GetString();
 
-                string username = Convert.ToString(data.username);
-                string password = Convert.ToString(data.password);
-
-                if (Services.Database.GetUser(username) != null)
+                if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
                 {
-                    client.Send(new
-                    {
-                        Type = MessageType.AUTH_REGISTER_FAIL,
-                        Payload = new { ok = false, reason = "UsernameExists" }
-                    });
+                    client.SendEnvelope(MessageType.AUTH_REGISTER_FAIL, JsonHelper.Serialize(new { ok = false, reason = "MissingFields" }));
                     return;
                 }
 
-                bool ok = Services.Database.Register(username, password);
-
-                client.Send(new
+                if (Services.Database.GetUser(username) != null)
                 {
-                    Type = MessageType.AUTH_REGISTER_OK,
-                    Payload = new { ok = ok }
-                });
+                    client.SendEnvelope(MessageType.AUTH_REGISTER_FAIL, JsonHelper.Serialize(new { ok = false, reason = "UsernameExists" }));
+                    return;
+                }
 
+                string hash = Services.Auth.HashPassword(password);
+                bool ok = Services.Database.Register(username, hash);
+
+                client.SendEnvelope(ok ? MessageType.AUTH_REGISTER_OK : MessageType.AUTH_REGISTER_FAIL, JsonHelper.Serialize(new { ok }));
                 Server.Log($"User REGISTER: {username}");
             }
             catch (Exception ex)
             {
                 Server.Log($"Register Error: {ex.Message}");
+                client.SendEnvelope(MessageType.AUTH_REGISTER_FAIL, JsonHelper.Serialize(new { ok = false, reason = "ServerError" }));
             }
         }
 
-        // =============================
-        // HANDLE LOGOUT
-        // =============================
         public static void HandleLogout(ClientConnection client)
         {
             string name = client.Username;
-
             client.Username = "Unknown";
-
-            client.Send(new
-            {
-                Type = MessageType.AUTH_LOGOUT_OK,
-                Payload = new { ok = true }
-            });
-
+            client.SendEnvelope(MessageType.AUTH_LOGOUT_OK, JsonHelper.Serialize(new { ok = true }));
             Server.Log($"User LOGOUT: {name}");
             Server.OnClientListChanged?.Invoke();
         }
