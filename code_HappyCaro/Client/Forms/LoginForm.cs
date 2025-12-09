@@ -12,69 +12,87 @@ namespace Client.Forms
 {
     public partial class LoginForm : Form
     {
+        //private DatabaseHelper db;
         public LoginForm()
         {
             InitializeComponent();
+            txtPassword.UseSystemPasswordChar = true;
+            //db = new DatabaseHelper();
         }
-        private void RemovePlaceholderEvent(object sender, EventArgs e)
-        {
-            TextBox txt = sender as TextBox;
 
-            if (txt.ForeColor == Color.Gray)
+        
+
+        private void lnkForgotPass_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+
+        }
+
+        private void lnkRegister_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            var reg = new RegisterForm();
+
+            this.Hide(); // Ẩn login
+
+            reg.FormClosed += (s, args) => this.Show(); // Khi reg đóng, show lại login
+
+            reg.Show();
+
+        }
+
+        
+
+        private void btnLogin_Click(object sender, EventArgs e)
+        {
+            string username = txtUsername.Text.Trim();
+            string password = txtPassword.Text;
+
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
             {
-                txt.Text = "";
-                txt.ForeColor = Color.Black;
+                MessageBox.Show("Vui lòng nhập đầy đủ thông tin!");
+                return;
+            }
+
+            // Hash password trước khi truyền vào DB
+            //string hashedPassword = Security.HashPassword(password);
+
+            //User loggedUser = db.Login(username, hashedPassword);
+
+            //if (loggedUser != null)
+            //{
+            //    MessageBox.Show("Đăng nhập thành công!");
+            //    MainForm main = new MainForm(loggedUser, db);
+            //    main.Show();
+            //    this.Hide();
+            //}
+            else
+            {
+                MessageBox.Show("Sai tài khoản hoặc mật khẩu!");
             }
         }
-        private void AddPlaceholderEvent(object sender, EventArgs e)
-        {
-            TextBox txt = sender as TextBox;
 
-            if (string.IsNullOrWhiteSpace(txt.Text))
-            {
-                SetPlaceholder(txt, "Tên đăng nhập");
-            }
-        }
-        private void RemovePasswordPlaceholderEvent(object sender, EventArgs e)
+        private void ckbShowPass_CheckedChanged(object sender, EventArgs e)
         {
-            if (txtPassword.ForeColor == Color.Gray)
+            if (ckbShowPass.Checked) 
+            { 
+                txtPassword.UseSystemPasswordChar  = false;
+            }
+            else
             {
-                txtPassword.Text = "";
-                txtPassword.ForeColor = Color.Black;
                 txtPassword.UseSystemPasswordChar = true;
             }
         }
-        private void AddPasswordPlaceholderEvent(object sender, EventArgs e)
+        private void txtUsername_TextChanged(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(txtPassword.Text))
-            {
-                txtPassword.UseSystemPasswordChar = false;
-                SetPlaceholder(txtPassword, "Mật khẩu");
-            }
-        }
-        private void SetPlaceholder(TextBox txt, string text)
-        {
-            txt.Text = text;
-            txt.ForeColor = Color.Gray;
-        }
-        
-        
 
-        private void LoginForm_Load(object sender, EventArgs e)
-        {
-            SetPlaceholder(txtUsername, "Tên đăng nhập");
-            SetPlaceholder(txtPassword, "Mật khẩu");
-
-            // Gán sự kiện
-            txtUsername.Enter += RemovePlaceholderEvent;
-            txtUsername.Leave += AddPlaceholderEvent;
-
-            txtPassword.Enter += RemovePasswordPlaceholderEvent;
-            txtPassword.Leave += AddPasswordPlaceholderEvent;
-
-            this.ActiveControl = lblLogin;
         }
 
-        
+        private void txtPassword_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+        private void LoginForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Application.Exit();
+        }
     }
 }
