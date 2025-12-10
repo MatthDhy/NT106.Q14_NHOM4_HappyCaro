@@ -19,8 +19,24 @@ namespace Client.Forms
             txtPassword.UseSystemPasswordChar = true;
             //db = new DatabaseHelper();
         }
+        public Boolean isValid()
+        {
+            if (string.IsNullOrEmpty(txtUsername.Text))
+            {
+                MessageBox.Show("Vui lòng nhập tên đăng nhập", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+            if (string.IsNullOrEmpty(txtPassword.Text))
+            {
+                MessageBox.Show("Vui lòng nhập mật khẩu!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+            
+            
+            return true;
 
-        
+        }
+
 
         private void lnkForgotPass_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
@@ -81,18 +97,12 @@ namespace Client.Forms
                 txtPassword.UseSystemPasswordChar = true;
             }
         }
-        private void txtUsername_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void txtPassword_TextChanged(object sender, EventArgs e)
-        {
-
-        }
+        
         private void LoginForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             Application.Exit();
         }
+
+        
     }
 }

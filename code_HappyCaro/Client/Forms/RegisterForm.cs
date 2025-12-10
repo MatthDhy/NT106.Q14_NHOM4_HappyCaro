@@ -16,6 +16,7 @@ namespace Client.Forms
         {
             InitializeComponent();
             txtPassword.UseSystemPasswordChar = true;
+            txtConfirmPass.UseSystemPasswordChar = true;
         }
         public Boolean isValid()
         {
@@ -59,22 +60,27 @@ namespace Client.Forms
 
         private void btnRegister_Click(object sender, EventArgs e)
         {
-            if (isValid())
-            {
-
-            }
+            if (!isValid()) return;
+            
         }
 
         private void btnEye_Click(object sender, EventArgs e)
         {
+           
             bool isHidden = txtPassword.UseSystemPasswordChar;
             // Toggle
+            
             txtPassword.UseSystemPasswordChar = !isHidden;
             txtConfirmPass.UseSystemPasswordChar = !isHidden;
 
             // Đổi icon
-            btnEye.Text = isHidden ? "🙉" : "🙈";
+            btnEye.Image = isHidden ? Properties.Resources.hide : Properties.Resources.view;
 
+        }
+        private void RegisterForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            
+            
         }
     }
 }

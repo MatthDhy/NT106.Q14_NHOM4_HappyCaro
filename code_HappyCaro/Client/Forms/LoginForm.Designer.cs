@@ -35,10 +35,10 @@ namespace Client.Forms
             this.lblAsk = new System.Windows.Forms.Label();
             this.lnkForgotPass = new System.Windows.Forms.LinkLabel();
             this.lnkRegister = new System.Windows.Forms.LinkLabel();
-            this.txtUsername = new Guna.UI2.WinForms.Guna2TextBox();
-            this.txtPassword = new Guna.UI2.WinForms.Guna2TextBox();
             this.btnLogin = new Guna.UI2.WinForms.Guna2GradientButton();
             this.ckbShowPass = new Guna.UI2.WinForms.Guna2CheckBox();
+            this.txtPassword = new Guna.UI2.WinForms.Guna2TextBox();
+            this.txtUsername = new Guna.UI2.WinForms.Guna2TextBox();
             this.SuspendLayout();
             // 
             // lblLogin
@@ -89,50 +89,6 @@ namespace Client.Forms
             this.lnkRegister.Text = "Đăng ký";
             this.lnkRegister.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnkRegister_LinkClicked);
             // 
-            // txtUsername
-            // 
-            this.txtUsername.Cursor = System.Windows.Forms.Cursors.IBeam;
-            this.txtUsername.DefaultText = "";
-            this.txtUsername.DisabledState.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(208)))), ((int)(((byte)(208)))), ((int)(((byte)(208)))));
-            this.txtUsername.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(226)))), ((int)(((byte)(226)))), ((int)(((byte)(226)))));
-            this.txtUsername.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(138)))), ((int)(((byte)(138)))), ((int)(((byte)(138)))));
-            this.txtUsername.DisabledState.PlaceholderForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(138)))), ((int)(((byte)(138)))), ((int)(((byte)(138)))));
-            this.txtUsername.FocusedState.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(94)))), ((int)(((byte)(148)))), ((int)(((byte)(255)))));
-            this.txtUsername.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F);
-            this.txtUsername.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(200)))));
-            this.txtUsername.HoverState.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(94)))), ((int)(((byte)(148)))), ((int)(((byte)(255)))));
-            this.txtUsername.Location = new System.Drawing.Point(240, 136);
-            this.txtUsername.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.txtUsername.Name = "txtUsername";
-            this.txtUsername.PlaceholderForeColor = System.Drawing.Color.Black;
-            this.txtUsername.PlaceholderText = "Tên đăng nhập";
-            this.txtUsername.SelectedText = "";
-            this.txtUsername.Size = new System.Drawing.Size(329, 38);
-            this.txtUsername.TabIndex = 10;
-            this.txtUsername.TextChanged += new System.EventHandler(this.txtUsername_TextChanged);
-            // 
-            // txtPassword
-            // 
-            this.txtPassword.Cursor = System.Windows.Forms.Cursors.IBeam;
-            this.txtPassword.DefaultText = "";
-            this.txtPassword.DisabledState.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(208)))), ((int)(((byte)(208)))), ((int)(((byte)(208)))));
-            this.txtPassword.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(226)))), ((int)(((byte)(226)))), ((int)(((byte)(226)))));
-            this.txtPassword.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(138)))), ((int)(((byte)(138)))), ((int)(((byte)(138)))));
-            this.txtPassword.DisabledState.PlaceholderForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(138)))), ((int)(((byte)(138)))), ((int)(((byte)(138)))));
-            this.txtPassword.FocusedState.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(94)))), ((int)(((byte)(148)))), ((int)(((byte)(255)))));
-            this.txtPassword.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F);
-            this.txtPassword.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(200)))));
-            this.txtPassword.HoverState.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(94)))), ((int)(((byte)(148)))), ((int)(((byte)(255)))));
-            this.txtPassword.Location = new System.Drawing.Point(240, 196);
-            this.txtPassword.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.txtPassword.Name = "txtPassword";
-            this.txtPassword.PlaceholderForeColor = System.Drawing.Color.Black;
-            this.txtPassword.PlaceholderText = "Mật khẩu";
-            this.txtPassword.SelectedText = "";
-            this.txtPassword.Size = new System.Drawing.Size(329, 38);
-            this.txtPassword.TabIndex = 11;
-            this.txtPassword.TextChanged += new System.EventHandler(this.txtPassword_TextChanged);
-            // 
             // btnLogin
             // 
             this.btnLogin.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
@@ -169,16 +125,60 @@ namespace Client.Forms
             this.ckbShowPass.UncheckedState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(125)))), ((int)(((byte)(137)))), ((int)(((byte)(149)))));
             this.ckbShowPass.CheckedChanged += new System.EventHandler(this.ckbShowPass_CheckedChanged);
             // 
+            // txtPassword
+            // 
+            this.txtPassword.Cursor = System.Windows.Forms.Cursors.IBeam;
+            this.txtPassword.DefaultText = "";
+            this.txtPassword.DisabledState.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(208)))), ((int)(((byte)(208)))), ((int)(((byte)(208)))));
+            this.txtPassword.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(226)))), ((int)(((byte)(226)))), ((int)(((byte)(226)))));
+            this.txtPassword.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(138)))), ((int)(((byte)(138)))), ((int)(((byte)(138)))));
+            this.txtPassword.DisabledState.PlaceholderForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(138)))), ((int)(((byte)(138)))), ((int)(((byte)(138)))));
+            this.txtPassword.FocusedState.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(94)))), ((int)(((byte)(148)))), ((int)(((byte)(255)))));
+            this.txtPassword.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F);
+            this.txtPassword.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(200)))));
+            this.txtPassword.HoverState.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(94)))), ((int)(((byte)(148)))), ((int)(((byte)(255)))));
+            this.txtPassword.IconLeft = global::Client.Properties.Resources._lock;
+            this.txtPassword.Location = new System.Drawing.Point(240, 181);
+            this.txtPassword.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtPassword.Name = "txtPassword";
+            this.txtPassword.PlaceholderForeColor = System.Drawing.Color.Black;
+            this.txtPassword.PlaceholderText = "Mật khẩu";
+            this.txtPassword.SelectedText = "";
+            this.txtPassword.Size = new System.Drawing.Size(329, 38);
+            this.txtPassword.TabIndex = 17;
+            // 
+            // txtUsername
+            // 
+            this.txtUsername.Cursor = System.Windows.Forms.Cursors.IBeam;
+            this.txtUsername.DefaultText = "";
+            this.txtUsername.DisabledState.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(208)))), ((int)(((byte)(208)))), ((int)(((byte)(208)))));
+            this.txtUsername.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(226)))), ((int)(((byte)(226)))), ((int)(((byte)(226)))));
+            this.txtUsername.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(138)))), ((int)(((byte)(138)))), ((int)(((byte)(138)))));
+            this.txtUsername.DisabledState.PlaceholderForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(138)))), ((int)(((byte)(138)))), ((int)(((byte)(138)))));
+            this.txtUsername.FocusedState.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(94)))), ((int)(((byte)(148)))), ((int)(((byte)(255)))));
+            this.txtUsername.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F);
+            this.txtUsername.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(200)))));
+            this.txtUsername.HoverState.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(94)))), ((int)(((byte)(148)))), ((int)(((byte)(255)))));
+            this.txtUsername.IconLeft = global::Client.Properties.Resources.user;
+            this.txtUsername.Location = new System.Drawing.Point(240, 114);
+            this.txtUsername.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtUsername.Name = "txtUsername";
+            this.txtUsername.PlaceholderForeColor = System.Drawing.Color.Black;
+            this.txtUsername.PlaceholderText = "Tên đăng nhập";
+            this.txtUsername.SelectedText = "";
+            this.txtUsername.Size = new System.Drawing.Size(329, 38);
+            this.txtUsername.TabIndex = 16;
+            // 
             // LoginForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
             this.ClientSize = new System.Drawing.Size(832, 463);
-            this.Controls.Add(this.ckbShowPass);
-            this.Controls.Add(this.btnLogin);
             this.Controls.Add(this.txtPassword);
             this.Controls.Add(this.txtUsername);
+            this.Controls.Add(this.ckbShowPass);
+            this.Controls.Add(this.btnLogin);
             this.Controls.Add(this.lnkRegister);
             this.Controls.Add(this.lnkForgotPass);
             this.Controls.Add(this.lblAsk);
@@ -197,9 +197,9 @@ namespace Client.Forms
         private System.Windows.Forms.Label lblAsk;
         private System.Windows.Forms.LinkLabel lnkForgotPass;
         private LinkLabel lnkRegister;
-        private Guna.UI2.WinForms.Guna2TextBox txtUsername;
-        private Guna.UI2.WinForms.Guna2TextBox txtPassword;
         private Guna.UI2.WinForms.Guna2GradientButton btnLogin;
         private Guna.UI2.WinForms.Guna2CheckBox ckbShowPass;
+        private Guna.UI2.WinForms.Guna2TextBox txtPassword;
+        private Guna.UI2.WinForms.Guna2TextBox txtUsername;
     }
 }
