@@ -4,6 +4,7 @@ using System.Data.SqlClient;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using System.Configuration;
 
 namespace ServerCore.ServerCore
 {
@@ -85,7 +86,12 @@ namespace ServerCore.ServerCore
         // ======================================================
         public static class Database
         {
-            private static string _conn = @"Server=.;Database=HappyCaroDB;Integrated Security=True;";
+            private static readonly string _conn = ConfigurationManager.ConnectionStrings["CaroDb"].ConnectionString;
+
+            public static SqlConnection GetConnection()
+            {
+                return new SqlConnection(_conn);
+            }
 
             public class DbUser
             {
