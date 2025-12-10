@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data.SqlClient;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using System.Configuration;
+using MailKit.Net.Smtp;
+using MimeKit;
+
 
 namespace ServerCore.ServerCore
 {
@@ -15,9 +18,19 @@ namespace ServerCore.ServerCore
         // ======================================================
         public static class Auth
         {
-            private static Dictionary<string, string> _resetTokens = new Dictionary<string, string>();
+            // Token + thời gian hết hạn
+            private class ResetTokenInfo
+            {
+                public string Token;
+                public DateTime ExpireAt;
+            }
 
-            // SHA256 hashing (C# 7.3 compatible)
+            private static Dictionary<string, ResetTokenInfo> _resetTokens = new Dictionary<string, ResetTokenInfo>();
+
+
+            // ============================
+            // HASH PASSWORD (giữ nguyên)
+            // ============================
             public static string HashPassword(string password)
             {
                 using (var sha = SHA256.Create())
@@ -28,7 +41,6 @@ namespace ServerCore.ServerCore
                 }
             }
 
-            // Convert bytes → hex string (replacement for Convert.ToHexString)
             private static string BytesToHex(byte[] data)
             {
                 StringBuilder sb = new StringBuilder(data.Length * 2);
@@ -37,40 +49,99 @@ namespace ServerCore.ServerCore
                 return sb.ToString();
             }
 
+
+            // ============================
+            // GỬI EMAIL RESET TOKEN
+            // ============================
+            private static async Task SendResetEmailAsync(string toEmail, string token)
+            {
+                var message = new MimeMessage();
+                message.From.Add(new MailboxAddress("HappyCaro Support", "yourgmail@gmail.com"));
+                message.To.Add(new MailboxAddress("", toEmail));
+                message.Subject = "HappyCaro - Reset Password Token";
+
+                message.Body = new TextPart("plain")
+                {
+                    Text = $"Your reset token is: {token}\nThis code expires in 5 minutes."
+                };
+
+                using (var client = new SmtpClient())
+                {
+                    await client.ConnectAsync("smtp.gmail.com", 465, true);
+                    await client.AuthenticateAsync("yourgmail@gmail.com", "YOUR_APP_PASSWORD");
+
+                    await client.SendAsync(message);
+                    await client.DisconnectAsync(true);
+                }
+            }
+
+
+            // ============================
+            // REQUEST FORGOT PASSWORD
+            // ============================
             public static async Task<bool> HandleForgotPasswordAsync(string email)
             {
-                await Task.Delay(30);
+                await Task.Delay(10);
 
                 var user = Database.GetUserByEmail(email);
                 if (user == null)
-                    return true; // hide existence
+                    return true; // không tiết lộ email có tồn tại
 
                 string token = new Random().Next(100000, 999999).ToString();
 
                 lock (_resetTokens)
                 {
-                    _resetTokens[email] = token;
+                    _resetTokens[email] = new ResetTokenInfo
+                    {
+                        Token = token,
+                        ExpireAt = DateTime.Now.AddMinutes(5) // hết hạn sau 5 phút
+                    };
                 }
 
-                Console.WriteLine("[RESET TOKEN] " + email + " => " + token);
+                Console.WriteLine($"[RESET TOKEN] {email} => {token}");
 
-                // Production: send via email
+                await SendResetEmailAsync(email, token);
+
                 return true;
             }
 
+
+            // ============================
+            // VERIFY TOKEN + RESET PASSWORD
+            // ============================
             public static bool HandleResetVerification(string email, string token, string newPassword)
             {
+                ResetTokenInfo info = null;
+
                 lock (_resetTokens)
                 {
                     if (!_resetTokens.ContainsKey(email))
                         return false;
 
-                    if (_resetTokens[email] != token)
-                        return false;
+                    info = _resetTokens[email];
+                }
 
+                // 1) Kiểm tra token đúng
+                if (info.Token != token)
+                    return false;
+
+                // 2) Kiểm tra hết hạn
+                if (DateTime.Now > info.ExpireAt)
+                {
+                    lock (_resetTokens)
+                    {
+                        _resetTokens.Remove(email);
+                    }
+                    return false; // expired
+                }
+
+                // 3) Token OK → xóa token
+                lock (_resetTokens)
+                {
                     _resetTokens.Remove(email);
                 }
 
+                // 4) Cập nhật mật khẩu
                 var user = Database.GetUserByEmail(email);
                 if (user == null) return false;
 
