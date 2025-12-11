@@ -59,7 +59,14 @@ namespace Client
         public int losses { get; set; }
         public int draws { get; set; }
     }
-
+    public class UserInfo
+    {
+        public string Username { get; set; }
+        public int RankPoint { get; set; }
+        public int Wins { get; set; }
+        public int Losses { get; set; }
+        public int Draws { get; set; }
+    }
     public static class JsonHelper
     {
         public static readonly JsonSerializerOptions Options = new JsonSerializerOptions
