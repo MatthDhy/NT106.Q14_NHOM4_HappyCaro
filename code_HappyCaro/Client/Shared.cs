@@ -51,6 +51,15 @@ namespace Client
         public string Payload { get; set; }
     }
 
+    public class RankingItem
+    {
+        public string username { get; set; }
+        public int rank { get; set; }
+        public int wins { get; set; }
+        public int losses { get; set; }
+        public int draws { get; set; }
+    }
+
     public static class JsonHelper
     {
         public static readonly JsonSerializerOptions Options = new JsonSerializerOptions
