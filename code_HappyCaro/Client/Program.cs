@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Client.Forms;
@@ -9,39 +7,80 @@ namespace Client
 {
     internal static class Program
     {
-        /// <summary>
-        /// The main entry point for the application.
-        /// </summary>
+        // Fallback nếu Discovery không tìm thấy server
+        private const string DEFAULT_IP = "127.0.0.1";
+        private const int DEFAULT_PORT = 18123;
+
         [STAThread]
         static void Main()
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            // --- Khởi tạo Dependencies ---
-            var tcpClientHelper = new TcpClientHelper();
-            var clientDispatcher = new ClientDispatcher(tcpClientHelper);
-            var clientRequest = new ClientRequest(tcpClientHelper);
+            // -------------------------------------------------------
+            // 1) Khởi tạo TCP + Dispatcher + Request
+            // -------------------------------------------------------
+            var tcp = new TcpClientHelper();
+            var dispatcher = new ClientDispatcher(tcp);
+            var request = new ClientRequest(tcp);
 
-            // --- Cố gắng kết nối ngay lập tức (Nếu lỗi sẽ hiển thị MessageBox) ---
-            try
+            // -------------------------------------------------------
+            // 2) Khởi tạo Discovery Listener
+            // -------------------------------------------------------
+            var discovery = new DiscoveryListener();
+            bool serverFound = false;
+
+            discovery.OnServerFound += (ip, port) =>
             {
-                // Thay đổi IP và Port tại đây nếu cần
-                tcpClientHelper.Connect("127.0.0.1", 12345);
-            }
-            catch (Exception ex)
+                if (serverFound) return; // chỉ connect lần đầu
+                serverFound = true;
+
+                MessageBox.Show(
+                    $"Tìm thấy server Caro:\nIP: {ip}\nPort: {port}",
+                    "Server Found",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information
+                );
+
+                tcp.Connect(ip, port);
+            };
+
+            // Bắt đầu chờ broadcast
+            discovery.StartListening();
+
+            // -------------------------------------------------------
+            // 3) Fallback sau 3 giây nếu không thấy server
+            // -------------------------------------------------------
+            _ = Task.Run(async () =>
             {
-                MessageBox.Show($"Lỗi kết nối Server! Debugging có thể không hoạt động hoàn chỉnh.\n{ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                // Vẫn tiếp tục mở Form để debug UI, nhưng chức năng mạng sẽ thất bại.
-            }
+                await Task.Delay(3000);
 
-            // --- Mở LoginForm và truyền các dependencies ---
-            var loginForm = new LoginForm(clientRequest, clientDispatcher);
+                if (!serverFound)
+                {
+                    MessageBox.Show(
+                        $"Không tìm thấy server qua LAN.\nKết nối bằng IP mặc định: {DEFAULT_IP}:{DEFAULT_PORT}",
+                        "Không tìm thấy Server",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning
+                    );
 
-            Application.Run(loginForm);
+                    tcp.Connect(DEFAULT_IP, DEFAULT_PORT);
+                }
+            });
 
-            // --- Dọn dẹp ---
-            tcpClientHelper.Dispose();
+            // -------------------------------------------------------
+            // 4) Khi app đóng → cleanup
+            // -------------------------------------------------------
+            Application.ApplicationExit += (s, e) =>
+            {
+                try { discovery.Stop(); } catch { }
+                try { tcp.Dispose(); } catch { }
+            };
+
+            // -------------------------------------------------------
+            // 5) Mở form Login
+            // -------------------------------------------------------
+            Application.Run(new LoginForm(request, dispatcher));
         }
     }
 }

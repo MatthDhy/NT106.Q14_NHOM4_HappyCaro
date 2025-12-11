@@ -13,6 +13,8 @@ namespace Client
             _tcp.OnEnvelopeReceived += Dispatch;
         }
 
+        public TcpClientHelper Tcp => _tcp;
+
         private void Dispatch(MessageEnvelope env)
         {
             switch (env.Type)

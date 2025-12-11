@@ -1,158 +1,137 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Client.Forms
 {
     public partial class RegisterForm : Form
     {
-        // Thêm trường để lưu trữ đối tượng ClientRequest
         private readonly ClientRequest _clientRequest;
-        private readonly ClientDispatcher _clientDispatcher; // Cần để đăng ký sự kiện nhận phản hồi
+        private readonly ClientDispatcher _dispatcher;
 
-        // Cập nhật constructor để nhận TcpClientHelper và ClientRequest
-        public RegisterForm(ClientRequest clientRequest, ClientDispatcher clientDispatcher)
+        private bool _showPassword = false;
+
+        public RegisterForm(ClientRequest request, ClientDispatcher dispatcher)
         {
             InitializeComponent();
-            _clientDispatcher.OnRegisterSuccess += OnRegisterSuccess;
-            _clientDispatcher.OnRegisterFail += OnRegisterFail; // Lưu trữ để đăng ký/hủy đăng ký sự kiện
+            _clientRequest = request;
+            _dispatcher = dispatcher;
 
-            // Đăng ký sự kiện nhận phản hồi từ server
-
-            // Cài đặt mật khẩu ẩn
             txtPassword.UseSystemPasswordChar = true;
             txtConfirmPass.UseSystemPasswordChar = true;
+
+            // Gắn event dispatcher
+            _dispatcher.OnRegisterSuccess += HandleRegisterSuccess;
+            _dispatcher.OnRegisterFail += HandleRegisterFail;
+
+            lnkLogin.LinkClicked += lnkLogin_LinkClicked;
         }
 
-        // Phương thức kiểm tra tính hợp lệ của dữ liệu
-        public bool IsValid()
+        private bool ValidateInput()
         {
             if (string.IsNullOrWhiteSpace(txtUsername.Text))
             {
-                MessageBox.Show("Vui lòng nhập tên đăng nhập!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Vui lòng nhập tên đăng nhập");
                 return false;
             }
             if (string.IsNullOrWhiteSpace(txtPassword.Text))
             {
-                MessageBox.Show("Vui lòng nhập mật khẩu!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return false;
-            }
-            if (string.IsNullOrWhiteSpace(txtConfirmPass.Text))
-            {
-                MessageBox.Show("Vui lòng xác nhận mật khẩu!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Vui lòng nhập mật khẩu");
                 return false;
             }
             if (txtPassword.Text != txtConfirmPass.Text)
             {
-                MessageBox.Show("Mật khẩu không khớp!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Mật khẩu không trùng khớp");
                 return false;
             }
-            // Mặc dù trong file gốc chỉ có kiểm tra null/empty cho Email, 
-            // nên thêm kiểm tra định dạng email cơ bản
-            if (string.IsNullOrWhiteSpace(txtEmail.Text) || !IsValidEmail(txtEmail.Text))
+            if (string.IsNullOrWhiteSpace(txtEmail.Text))
             {
-                MessageBox.Show("Vui lòng nhập email hợp lệ!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Vui lòng nhập email");
                 return false;
             }
+
             return true;
-        }
-        private bool IsValidEmail(string email)
-        {
-            // Regex đơn giản để kiểm tra định dạng email
-            var emailRegex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$");
-            return emailRegex.IsMatch(email);
-        }
-
-
-        private void OnRegisterSuccess()
-        {
-            if (InvokeRequired)
-            {
-                Invoke(new Action(OnRegisterSuccess));
-                return;
-            }
-
-            MessageBox.Show("Đăng ký thành công! Vui lòng đăng nhập.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            // Hủy đăng ký sự kiện trước khi đóng Form
-            UnsubscribeDispatcherEvents();
-            this.Close();
-        }
-        private void OnRegisterFail(string payload)
-        {
-            if (InvokeRequired)
-            {
-                Invoke(new Action<string>(OnRegisterFail), payload);
-                return;
-            }
-
-            string errorMessage = "Đăng ký thất bại.";
-            try
-            {
-                // Giả sử có JsonHelper.Deserialize và ErrorResponse class
-                var errorObj = JsonHelper.Deserialize<ErrorResponse>(payload);
-                if (errorObj != null && !string.IsNullOrEmpty(errorObj.Error))
-                {
-                    errorMessage = errorObj.Error;
-                }
-            }
-            catch { /* Bỏ qua lỗi Deserialize */ }
-
-            MessageBox.Show($"Đăng ký thất bại: {errorMessage}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            btnRegister.Enabled = true; // Kích hoạt lại nút đăng ký
-        }
-        private void UnsubscribeDispatcherEvents()
-        {
-            _clientDispatcher.OnRegisterSuccess -= OnRegisterSuccess;
-            _clientDispatcher.OnRegisterFail -= OnRegisterFail;
-        }
-        private class ErrorResponse
-        {
-            public string Error { get; set; }
-        }
-
-
-        private void lnkLogin_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-        {
-            this.Close();
         }
 
         private void btnRegister_Click(object sender, EventArgs e)
         {
-            if (!IsValid()) return;
+            if (!ValidateInput()) return;
 
-            // Vô hiệu hóa nút để tránh gửi nhiều lần
             btnRegister.Enabled = false;
 
-            // Gửi yêu cầu đăng ký qua ClientRequest
-            _clientRequest.Register(txtUsername.Text, txtPassword.Text);
+            _clientRequest.Register(txtUsername.Text.Trim(), txtPassword.Text);
+        }
 
+        private void HandleRegisterSuccess()
+        {
+            if (InvokeRequired)
+            {
+                Invoke(new Action(HandleRegisterSuccess));
+                return;
+            }
+
+            btnRegister.Enabled = true;
+            MessageBox.Show("Đăng ký thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            Unsubscribe();
+
+            var login = new LoginForm(_clientRequest, _dispatcher);
+            login.Show();
+            this.Close();
+        }
+
+        private void HandleRegisterFail(string payload)
+        {
+            if (InvokeRequired)
+            {
+                Invoke(new Action<string>(HandleRegisterFail), payload);
+                return;
+            }
+
+            btnRegister.Enabled = true;
+
+            string msg = "Đăng ký thất bại.";
+
+            try
+            {
+                var err = JsonHelper.Deserialize<ErrorResponse>(payload);
+                if (err != null) msg = err.Error;
+            }
+            catch { }
+
+            MessageBox.Show(msg, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
         private void btnEye_Click(object sender, EventArgs e)
         {
-           
-            bool isHidden = txtPassword.UseSystemPasswordChar;
-            // Toggle
-            
-            txtPassword.UseSystemPasswordChar = !isHidden;
-            txtConfirmPass.UseSystemPasswordChar = !isHidden;
+            _showPassword = !_showPassword;
 
-            // Đổi icon
-            btnEye.Image = isHidden ? Properties.Resources.hide : Properties.Resources.view;
-
+            txtPassword.UseSystemPasswordChar = !_showPassword;
+            txtConfirmPass.UseSystemPasswordChar = !_showPassword;
         }
+
+        private void lnkLogin_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            Unsubscribe();
+
+            var login = new LoginForm(_clientRequest, _dispatcher);
+            login.Show();
+            this.Close();
+        }
+
+        private void Unsubscribe()
+        {
+            _dispatcher.OnRegisterSuccess -= HandleRegisterSuccess;
+            _dispatcher.OnRegisterFail -= HandleRegisterFail;
+        }
+
         private void RegisterForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            UnsubscribeDispatcherEvents();
+            Unsubscribe();
         }
 
-
+        private class ErrorResponse
+        {
+            public string Error { get; set; }
+        }
     }
 }

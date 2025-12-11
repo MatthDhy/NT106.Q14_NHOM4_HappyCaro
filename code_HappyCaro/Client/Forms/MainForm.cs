@@ -1,23 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
-using Newtonsoft.Json; // Cần cài NuGet Newtonsoft.Json hoặc dùng System.Text.Json tuỳ project bạn
-using Client.Forms;
 
 namespace Client.Forms
 {
     public partial class MainForm : Form
     {
-        private TcpClientHelper _client; // Biến kết nối mạng
-        private UserInfo _currentUser;   // Thông tin người chơi hiện tại
+        private readonly ClientDispatcher _dispatcher;
+        private readonly ClientRequest _request;
+        private readonly UserInfo _user;
 
-        // Constructor nhận client và user info từ Login Form
-        public MainForm(TcpClientHelper client, string username, int rank, int wins, int losses)
+        public MainForm(ClientDispatcher dispatcher, string username, int rank, int wins, int losses)
         {
             InitializeComponent();
-            _client = client;
 
-            _currentUser = new UserInfo
+            _dispatcher = dispatcher;
+            _request = new ClientRequest(dispatcher.Tcp);
+
+            _user = new UserInfo
             {
                 Username = username,
                 RankPoint = rank,
@@ -25,132 +25,134 @@ namespace Client.Forms
                 Losses = losses
             };
 
-            // Đăng ký nhận tin nhắn từ server
-            if (_client != null)
-            {
-                _client.OnEnvelopeReceived += HandleServerMessage;
-            }
+            // Đăng ký sự kiện
+            _dispatcher.OnRankingReceived += OnRankingReceived;
+            _dispatcher.OnRoomCreated += OnRoomCreated;
+            _dispatcher.OnRoomJoined += OnRoomJoined;
         }
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-            // Hiển thị thông tin user lên giao diện
-            lblUsername.Text = _currentUser.Username;
-            lblRankPoint.Text = $"Điểm: {_currentUser.RankPoint}";
+            lblUsername.Text = _user.Username;
+            lblRankPoint.Text = $"Điểm: {_user.RankPoint}";
+            lblWinRate.Text = $"Thắng: {_user.Wins}/{_user.Wins + _user.Losses}";
 
-            int totalMatches = _currentUser.Wins + _currentUser.Losses + _currentUser.Draws;
-            lblWinRate.Text = $"Trận: {totalMatches} (Thắng: {_currentUser.Wins})";
-
-            // Yêu cầu server gửi bảng xếp hạng
-            RequestRanking();
+            // Load bảng xếp hạng
+            _request.RequestRanking();
         }
 
-        private void RequestRanking()
+        // ==========================================================
+        // RANKING
+        // ==========================================================
+
+        private void OnRankingReceived(string json)
         {
-            if (_client != null)
-            {
-                _client.EnqueueSend(new MessageEnvelope
-                {
-                    Type = MessageType.REQUEST_RANKING,
-                    Payload = ""
-                });
-            }
-        }
+            if (InvokeRequired) { Invoke(new Action<string>(OnRankingReceived), json); return; }
 
-        private void HandleServerMessage(MessageEnvelope env)
-        {
-            this.Invoke((MethodInvoker)delegate
-            {
-                try
-                {
-                    switch (env.Type)
-                    {
-                        case MessageType.RANKING_DATA:
-                            UpdateRankingList(env.Payload);
-                            break;
-
-                        case MessageType.ROOM_CREATE_OK:
-                            // Chuyển sang GameForm ở chế độ chờ
-                            var data = JsonHelper.Deserialize<dynamic>(env.Payload);
-                            int newRoomId = data.roomId; // Tuỳ cách bạn parse json
-                            OpenGameForm(newRoomId, _currentUser.Username, "Waiting...", _currentUser.Username);
-                            break;
-
-                        case MessageType.ROOM_JOIN_OK:
-                            // Chuyển sang GameForm để chơi
-                            var roomData = JsonHelper.Deserialize<dynamic>(env.Payload);
-                            // Parse dữ liệu từ server trả về để mở GameForm
-                            // Ví dụ: OpenGameForm(roomId, p1, p2...);
-                            break;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Lỗi xử lý tin nhắn: " + ex.Message);
-                }
-            });
-        }
-
-        private void UpdateRankingList(string jsonPayload)
-        {
-            // Giả sử server gửi về List<UserInfo>
-            // Bạn cần class RankingItem tương ứng với JSON server gửi
-            var rankingList = JsonHelper.Deserialize<List<RankingItem>>(jsonPayload);
-
+            var list = JsonHelper.Deserialize<List<RankingItem>>(json);
             dgvRanking.Rows.Clear();
+
+            if (list == null) return;
+
             int rank = 1;
-            if (rankingList != null)
+            foreach (var item in list)
             {
-                foreach (var item in rankingList)
-                {
-                    dgvRanking.Rows.Add(rank++, item.username, item.rank);
-                }
+                dgvRanking.Rows.Add(rank++, item.Username, item.RankPoint);
             }
         }
 
-        // Tạo phòng mới
+        // ==========================================================
+        // TẠO PHÒNG
+        // ==========================================================
+
         private void btnCreateRoom_Click(object sender, EventArgs e)
         {
-            _client.EnqueueSend(new MessageEnvelope
-            {
-                Type = MessageType.ROOM_CREATE,
-                Payload = ""
-            });
+            _request.CreateRoom();
         }
 
-        // Mở danh sách phòng (Có thể mở 1 Form con hoặc Dialog)
+        private void OnRoomCreated(string json)
+        {
+            if (InvokeRequired) { Invoke(new Action<string>(OnRoomCreated), json); return; }
+
+            var data = JsonHelper.Deserialize<RoomCreatedResponse>(json);
+
+            OpenGameForm(data.RoomId, isOwner: true);
+        }
+
+        // ==========================================================
+        // JOIN PHÒNG
+        // ==========================================================
+
         private void btnFindRoom_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Tính năng đang phát triển: Hiện danh sách phòng.");
-            // Logic: Gửi request lấy danh sách phòng -> Server trả về -> Hiển thị lên 1 form mới
+            MessageBox.Show("Tính năng tìm phòng sẽ được phát triển sau!", "Thông báo");
         }
 
-        // Chơi nhanh (ghép cặp ngẫu nhiên - Tuỳ chọn)
+        private void OnRoomJoined(string json)
+        {
+            if (InvokeRequired) { Invoke(new Action<string>(OnRoomJoined), json); return; }
+
+            var info = JsonHelper.Deserialize<RoomJoinedResponse>(json);
+
+            OpenGameForm(info.RoomId, isOwner: false);
+        }
+
+        // ==========================================================
+        // PLAY NOW (ghép ngẫu nhiên)
+        // ==========================================================
+
         private void btnPlayNow_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Đang tìm đối thủ ngẫu nhiên...");
+            MessageBox.Show("Tính năng ghép ngẫu nhiên sẽ được phát triển sau!", "Thông báo");
         }
 
-        private void OpenGameForm(int roomId, string p1, string p2, string firstTurn)
+        // ==========================================================
+        // CHUYỂN QUA GAMEFORM
+        // ==========================================================
+
+        private void OpenGameForm(int roomId, bool isOwner)
         {
-            // Code mở GameForm như bạn đã làm ở phần trước
-            // GameForm game = new GameForm(_client, roomId, ...);
-            // game.Show();
-            // this.Hide();
+            var game = new GameForm(_dispatcher, _request, _user, roomId, isOwner);
+
+            game.FormClosed += (s, e) =>
+            {
+                this.Show();
+                _request.RequestRanking();
+            };
+
+            game.Show();
+            this.Hide();
         }
+
+        // ==========================================================
+        // FORM EXIT
+        // ==========================================================
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            Application.Exit(); // Đóng toàn bộ ứng dụng
+            _dispatcher.OnRankingReceived -= OnRankingReceived;
+            _dispatcher.OnRoomCreated -= OnRoomCreated;
+            _dispatcher.OnRoomJoined -= OnRoomJoined;
         }
     }
-    // Giả sử bạn có class UserInfo để lưu trữ thông tin người chơi nhận từ Login
-    public class UserInfo
+
+    // ==========================================================
+    // SUPPORT CLASSES
+    // ==========================================================
+
+    public class RankingItem
     {
         public string Username { get; set; }
         public int RankPoint { get; set; }
-        public int Wins { get; set; }
-        public int Losses { get; set; }
-        public int Draws { get; set; }
+    }
+
+    public class RoomCreatedResponse
+    {
+        public int RoomId { get; set; }
+    }
+
+    public class RoomJoinedResponse
+    {
+        public int RoomId { get; set; }
     }
 }

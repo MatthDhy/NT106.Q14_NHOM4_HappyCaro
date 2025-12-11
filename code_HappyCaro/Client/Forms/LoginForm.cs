@@ -1,11 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Client.Forms
@@ -13,32 +6,33 @@ namespace Client.Forms
     public partial class LoginForm : Form
     {
         private readonly ClientRequest _clientRequest;
-        private readonly ClientDispatcher _clientDispatcher; // Thay thế TcpClientHelper
+        private readonly ClientDispatcher _dispatcher;
 
-        // CẬP NHẬT: Constructor nhận ClientDispatcher
-        public LoginForm(ClientRequest clientRequest, ClientDispatcher clientDispatcher)
+        public LoginForm(ClientRequest clientRequest, ClientDispatcher dispatcher)
         {
             InitializeComponent();
             _clientRequest = clientRequest;
-            _clientDispatcher = clientDispatcher;
+            _dispatcher = dispatcher;
 
-            // ĐĂNG KÝ SỰ KIỆN CỦA DISPATCHER
-            _clientDispatcher.OnLoginSuccess += OnLoginSuccess;
-            _clientDispatcher.OnLoginFail += OnLoginFail;
+            // Đăng ký sự kiện dispatcher
+            _dispatcher.OnLoginSuccess += HandleLoginSuccess;
+            _dispatcher.OnLoginFail += HandleLoginFail;
 
             txtPassword.UseSystemPasswordChar = true;
-            this.FormClosing += LoginForm_FormClosing;
+            lnkRegister.LinkClicked += lnkRegister_LinkClicked;
+            lnkForgotPass.LinkClicked += lnkForgotPass_LinkClicked;
         }
-        public Boolean IsValid()
+
+        private bool ValidateInput()
         {
-            if (string.IsNullOrEmpty(txtUsername.Text))
+            if (string.IsNullOrWhiteSpace(txtUsername.Text))
             {
                 MessageBox.Show("Vui lòng nhập tên đăng nhập", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }
-            if (string.IsNullOrEmpty(txtPassword.Text))
+            if (string.IsNullOrWhiteSpace(txtPassword.Text))
             {
-                MessageBox.Show("Vui lòng nhập mật khẩu!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Vui lòng nhập mật khẩu", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }
             return true;
@@ -46,117 +40,102 @@ namespace Client.Forms
 
         private void btnLogin_Click(object sender, EventArgs e)
         {
-            if (!IsValid()) return;
+            if (!ValidateInput()) return;
 
             btnLogin.Enabled = false;
-            // SỬ DỤNG ClientRequest để gửi
             _clientRequest.Login(txtUsername.Text.Trim(), txtPassword.Text);
         }
 
-        private void OnLoginSuccess(string payload)
+        private void HandleLoginSuccess(string payload)
         {
-            // Dispatcher đảm bảo phương thức này được gọi khi có MessageType.AUTH_LOGIN_OK
-            // Tuy nhiên, CẦN XỬ LÝ THREAD NẾU Dispatcher KHÔNG ĐẢM BẢO CHẠY TRÊN UI THREAD
-            // Vì ClientDispatcher không tự Invoke, chúng ta phải tự Invoke ở đây.
             if (InvokeRequired)
             {
-                Invoke(new Action<string>(OnLoginSuccess), payload);
+                Invoke(new Action<string>(HandleLoginSuccess), payload);
                 return;
             }
 
+            btnLogin.Enabled = true;
+
             try
             {
-                // Deserialize UserInfo từ Payload
-                var userInfo = JsonHelper.Deserialize<UserInfo>(payload);
+                var user = JsonHelper.Deserialize<UserInfo>(payload);
 
-                if (userInfo != null)
+                if (user == null)
                 {
-                    MessageBox.Show("Đăng nhập thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                    // Hủy đăng ký sự kiện của form này
-                    UnsubscribeDispatcherEvents();
-
-                    var mainForm = new MainForm(
-                        _clientDispatcher, 
-                        userInfo.Username,
-                        userInfo.RankPoint,
-                        userInfo.Wins,
-                        userInfo.Losses
-                    );
-
-                    mainForm.Show();
-                    this.Hide();
+                    MessageBox.Show("Dữ liệu phản hồi không hợp lệ.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
                 }
-                else
-                {
-                    MessageBox.Show("Lỗi dữ liệu phản hồi từ Server.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    btnLogin.Enabled = true;
-                }
+
+                MessageBox.Show("Đăng nhập thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                Unsubscribe();
+
+                var main = new MainForm(_dispatcher, user.Username, user.RankPoint, user.Wins, user.Losses);
+                main.Show();
+                this.Hide();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi xử lý dữ liệu đăng nhập: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                btnLogin.Enabled = true;
+                MessageBox.Show("Lỗi xử lý login: " + ex.Message);
             }
         }
-        private void OnLoginFail(string payload)
+
+        private void HandleLoginFail(string payload)
         {
             if (InvokeRequired)
             {
-                Invoke(new Action<string>(OnLoginFail), payload);
+                Invoke(new Action<string>(HandleLoginFail), payload);
                 return;
             }
 
-            string errorMessage = "Sai tên đăng nhập hoặc mật khẩu.";
+            btnLogin.Enabled = true;
+
+            string msg = "Sai tên đăng nhập hoặc mật khẩu.";
+
             try
             {
-                var errorObj = JsonHelper.Deserialize<ErrorResponse>(payload);
-                if (errorObj != null && !string.IsNullOrEmpty(errorObj.Error))
-                {
-                    errorMessage = errorObj.Error;
-                }
+                var err = JsonHelper.Deserialize<ErrorResponse>(payload);
+                if (err != null && !string.IsNullOrEmpty(err.Error))
+                    msg = err.Error;
             }
-            catch { /* Bỏ qua lỗi Deserialize */ }
+            catch { }
 
-            MessageBox.Show(errorMessage, "Lỗi Đăng nhập", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            btnLogin.Enabled = true;
-        }
-        private void UnsubscribeDispatcherEvents()
-        {
-            _clientDispatcher.OnLoginSuccess -= OnLoginSuccess;
-            _clientDispatcher.OnLoginFail -= OnLoginFail;
-            // Hủy đăng ký sự kiện khác nếu có
-        }
-        private class ErrorResponse
-        {
-            public string Error { get; set; }
+            MessageBox.Show(msg, "Đăng nhập thất bại", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
         private void ckbShowPass_CheckedChanged(object sender, EventArgs e)
         {
-            if (ckbShowPass.Checked) 
-            { 
-                txtPassword.UseSystemPasswordChar  = false;
-            }
-            else
-            {
-                txtPassword.UseSystemPasswordChar = true;
-            }
+            txtPassword.UseSystemPasswordChar = !ckbShowPass.Checked;
         }
+
         private void lnkRegister_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            // Cần truyền ClientRequest và ClientDispatcher (hoặc TcpClientHelper)
-            var reg = new RegisterForm(_clientRequest, _clientDispatcher); // Truyền TcpClientHelper cho RegisterForm
+            var reg = new RegisterForm(_clientRequest, _dispatcher);
+            reg.FormClosed += (s, t) => this.Show();
             this.Hide();
-            reg.FormClosed += (s, args) => this.Show();
             reg.Show();
         }
+
+        private void lnkForgotPass_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            MessageBox.Show("Tính năng đang được phát triển.");
+        }
+
+        private void Unsubscribe()
+        {
+            _dispatcher.OnLoginSuccess -= HandleLoginSuccess;
+            _dispatcher.OnLoginFail -= HandleLoginFail;
+        }
+
         private void LoginForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            UnsubscribeDispatcherEvents(); // Hủy đăng ký khi đóng
+            Unsubscribe();
             Application.Exit();
         }
 
-
+        private class ErrorResponse
+        {
+            public string Error { get; set; }
+        }
     }
 }
