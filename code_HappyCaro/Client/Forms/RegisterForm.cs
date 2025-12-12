@@ -30,22 +30,22 @@ namespace Client.Forms
         {
             if (string.IsNullOrWhiteSpace(txtUsername.Text))
             {
-                MessageBox.Show("Vui lòng nhập tên đăng nhập");
+                MessageBox.Show("Vui lòng nhập tên đăng nhập","Lỗi",MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }
             if (string.IsNullOrWhiteSpace(txtPassword.Text))
             {
-                MessageBox.Show("Vui lòng nhập mật khẩu");
+                MessageBox.Show("Vui lòng nhập mật khẩu", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }
             if (txtPassword.Text != txtConfirmPass.Text)
             {
-                MessageBox.Show("Mật khẩu không trùng khớp");
+                MessageBox.Show("Mật khẩu không trùng khớp", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }
             if (string.IsNullOrWhiteSpace(txtEmail.Text))
             {
-                MessageBox.Show("Vui lòng nhập email");
+                MessageBox.Show("Vui lòng nhập email", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }
 
@@ -103,10 +103,12 @@ namespace Client.Forms
 
         private void btnEye_Click(object sender, EventArgs e)
         {
-            _showPassword = !_showPassword;
+            bool isHidden = txtPassword.UseSystemPasswordChar;
 
-            txtPassword.UseSystemPasswordChar = !_showPassword;
-            txtConfirmPass.UseSystemPasswordChar = !_showPassword;
+            txtPassword.UseSystemPasswordChar = !isHidden;
+            txtConfirmPass.UseSystemPasswordChar = !isHidden;
+
+            btnEye.Image = isHidden ? Properties.Resources.hide : Properties.Resources.view;
         }
 
         private void lnkLogin_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
