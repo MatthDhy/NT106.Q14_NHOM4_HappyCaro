@@ -49,6 +49,7 @@
             this.grpUserInfo.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pBoxAvatar)).BeginInit();
             this.SuspendLayout();
+            this.btnMusic = new Guna.UI2.WinForms.Guna2Button();
             // 
             // pnlBackground
             // 
@@ -61,6 +62,7 @@
             this.pnlBackground.Controls.Add(this.lblTitle);
             this.pnlBackground.Controls.Add(this.btnMinimize);
             this.pnlBackground.Controls.Add(this.btnExit);
+            this.pnlBackground.Controls.Add(this.btnMusic);
             this.pnlBackground.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pnlBackground.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(165)))), ((int)(((byte)(50)))), ((int)(((byte)(255)))));
             this.pnlBackground.FillColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(100)))), ((int)(((byte)(255)))));
@@ -371,6 +373,19 @@
             this.guna2DragControl1.TargetControl = this.pnlBackground;
             this.guna2DragControl1.UseTransparentDrag = true;
             // 
+            // btnMusic
+            // 
+            this.btnMusic.BorderRadius = 15; // Nút tròn
+            this.btnMusic.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(128))))); // Màu cam nhạt
+            this.btnMusic.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnMusic.ForeColor = System.Drawing.Color.White;
+            this.btnMusic.Location = new System.Drawing.Point(30, 30); // Vị trí góc trái trên
+            this.btnMusic.Name = "btnMusic";
+            this.btnMusic.Size = new System.Drawing.Size(60, 40);
+            this.btnMusic.TabIndex = 20;
+            this.btnMusic.Text = "Nhạc: ON";
+            this.btnMusic.Click += new System.EventHandler(this.btnMusic_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -418,5 +433,6 @@
         private Guna.UI2.WinForms.Guna2GradientButton btnPlayNow;
         private Guna.UI2.WinForms.Guna2Elipse guna2Elipse1;
         private Guna.UI2.WinForms.Guna2DragControl guna2DragControl1;
+        private Guna.UI2.WinForms.Guna2Button btnMusic;
     }
 }
