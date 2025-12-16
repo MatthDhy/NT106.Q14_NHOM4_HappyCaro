@@ -58,7 +58,7 @@ namespace Client.Forms
 
             btnRegister.Enabled = false;
 
-            _clientRequest.Register(txtUsername.Text.Trim(), txtPassword.Text);
+            _clientRequest.Register(txtUsername.Text.Trim(), txtPassword.Text, txtEmail.Text.Trim());
         }
 
         private void HandleRegisterSuccess()

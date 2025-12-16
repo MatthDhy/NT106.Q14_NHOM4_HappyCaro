@@ -263,7 +263,7 @@ namespace ServerCore.ServerCore
             // =========================================
             // REGISTER USER
             // =========================================
-            public static bool Register(string username, string passwordHash)
+            public static bool Register(string username, string passwordHash, string email)
             {
                 SqlConnection conn = null;
                 try
@@ -278,7 +278,7 @@ namespace ServerCore.ServerCore
                     SqlCommand cmd = new SqlCommand(q, conn);
                     cmd.Parameters.AddWithValue("@u", username);
                     cmd.Parameters.AddWithValue("@p", passwordHash);
-                    cmd.Parameters.AddWithValue("@e", username + "@game.com");
+                    cmd.Parameters.AddWithValue("@e", email);
                     cmd.ExecuteNonQuery();
 
                     return true;

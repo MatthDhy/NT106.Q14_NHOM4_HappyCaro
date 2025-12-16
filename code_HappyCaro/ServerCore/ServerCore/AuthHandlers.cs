@@ -51,12 +51,20 @@ namespace ServerCore.ServerCore
                 var data = JsonHelper.Deserialize<dynamic>(payloadJson);
                 string username = data?.GetProperty("username").GetString();
                 string password = data?.GetProperty("password").GetString();
+                string email = data?.GetProperty("email").GetString();
 
-                if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+
+                if (string.IsNullOrEmpty(username) ||
+                    string.IsNullOrEmpty(password) ||
+                    string.IsNullOrEmpty(email))
                 {
-                    client.SendEnvelope(MessageType.AUTH_REGISTER_FAIL, JsonHelper.Serialize(new { ok = false, reason = "MissingFields" }));
+                    client.SendEnvelope(
+                        MessageType.AUTH_REGISTER_FAIL,
+                        JsonHelper.Serialize(new { ok = false, reason = "MissingFields" })
+                    );
                     return;
                 }
+
 
                 if (Services.Database.GetUser(username) != null)
                 {
@@ -65,7 +73,7 @@ namespace ServerCore.ServerCore
                 }
 
                 string hash = Services.Auth.HashPassword(password);
-                bool ok = Services.Database.Register(username, hash);
+                bool ok = Services.Database.Register(username, hash, email);
 
                 client.SendEnvelope(ok ? MessageType.AUTH_REGISTER_OK : MessageType.AUTH_REGISTER_FAIL, JsonHelper.Serialize(new { ok }));
                 Server.Log($"User REGISTER: {username}");

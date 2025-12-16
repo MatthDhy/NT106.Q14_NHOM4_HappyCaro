@@ -105,4 +105,13 @@ namespace ServerCore.ServerCore
         public static T Deserialize<T>(string json) => JsonSerializer.Deserialize<T>(json, Options);
         public static object Deserialize(string json, Type type) => JsonSerializer.Deserialize(json, type, Options);
     }
+
+    public enum NetworkMode
+    {
+        Local, // Client & Server same machine
+        Lan, // Auto-discovery via UDP
+        Internet // Manual IP / domain
+    }
+
+
 }

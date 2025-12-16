@@ -9,7 +9,7 @@ namespace Client
     {
         // Fallback nếu Discovery không tìm thấy server
         private const string DEFAULT_IP = "127.0.0.1";
-        private const int DEFAULT_PORT = 18123;
+        private const int DEFAULT_PORT = 8888;
 
         [STAThread]
         static void Main()
@@ -17,70 +17,78 @@ namespace Client
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            // -------------------------------------------------------
-            // 1) Khởi tạo TCP + Dispatcher + Request
-            // -------------------------------------------------------
             var tcp = new TcpClientHelper();
             var dispatcher = new ClientDispatcher(tcp);
             var request = new ClientRequest(tcp);
 
-            // -------------------------------------------------------
-            // 2) Khởi tạo Discovery Listener
-            // -------------------------------------------------------
+            // ================================
+            // CHỌN MODE Ở ĐÂY
+            // ================================
+            NetworkMode mode = NetworkMode.Local;
+            // NetworkMode.Lan;
+            // NetworkMode.Internet;
+
+            switch (mode)
+            {
+                case NetworkMode.Local:
+                    StartLocal(tcp);
+                    break;
+
+                case NetworkMode.Lan:
+                    StartLan(tcp);
+                    break;
+
+                case NetworkMode.Internet:
+                    StartInternet(tcp, "your.public.ip", 8888);
+                    break;
+            }
+
+            Application.Run(new LoginForm(request, dispatcher));
+        }
+        static void StartLocal(TcpClientHelper tcp)
+        {
+            tcp.Connect("127.0.0.1", 8888);
+        }
+
+        static void StartLan(TcpClientHelper tcp)
+        {
             var discovery = new DiscoveryListener();
-            bool serverFound = false;
+            bool connected = false;
 
             discovery.OnServerFound += (ip, port) =>
             {
-                if (serverFound) return; // chỉ connect lần đầu
-                serverFound = true;
+                if (connected) return;
+                connected = true;
 
-                MessageBox.Show(
-                    $"Tìm thấy server Caro:\nIP: {ip}\nPort: {port}",
-                    "Server Found",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information
-                );
-
+                discovery.Stop();
                 tcp.Connect(ip, port);
             };
 
-            // Bắt đầu chờ broadcast
-            discovery.StartListening();
+            discovery.Start();
 
-            // -------------------------------------------------------
-            // 3) Fallback sau 3 giây nếu không thấy server
-            // -------------------------------------------------------
-            _ = Task.Run(async () =>
+            Task.Delay(3000).ContinueWith(_ =>
             {
-                await Task.Delay(3000);
-
-                if (!serverFound)
+                if (!connected && !tcp.IsConnected)
                 {
                     MessageBox.Show(
-                        $"Không tìm thấy server qua LAN.\nKết nối bằng IP mặc định: {DEFAULT_IP}:{DEFAULT_PORT}",
-                        "Không tìm thấy Server",
+                        "Không tìm thấy server LAN",
+                        "LAN",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Warning
                     );
-
-                    tcp.Connect(DEFAULT_IP, DEFAULT_PORT);
                 }
             });
 
-            // -------------------------------------------------------
-            // 4) Khi app đóng → cleanup
-            // -------------------------------------------------------
             Application.ApplicationExit += (s, e) =>
             {
-                try { discovery.Stop(); } catch { }
-                try { tcp.Dispose(); } catch { }
+                discovery.Stop();
+                tcp.Dispose();
             };
-
-            // -------------------------------------------------------
-            // 5) Mở form Login
-            // -------------------------------------------------------
-            Application.Run(new LoginForm(request, dispatcher));
         }
+        static void StartInternet(TcpClientHelper tcp, string ip, int port)
+        {
+            tcp.Connect(ip, port);
+        }
+
     }
 }

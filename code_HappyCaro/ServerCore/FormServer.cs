@@ -9,6 +9,9 @@ namespace ServerCore
     public partial class FormServer : Form
     {
         private Server _server;
+        private DiscoveryBroadcaster _discovery;
+        private bool _lanMode = false; // false = LOCAL | true = LAN
+
 
         public FormServer()
         {
@@ -40,6 +43,13 @@ namespace ServerCore
             _server = new Server(port);
             _server.Start();
 
+            if (_lanMode)
+            {
+                string ip = lblIP.Text; // IP LAN đã load sẵn
+                _discovery = new DiscoveryBroadcaster(ip, port);
+                _discovery.Start();
+            }
+
             btnStart.Enabled = false;
             btnStop.Enabled = true;
 
@@ -52,7 +62,8 @@ namespace ServerCore
         private void btnStop_Click(object sender, EventArgs e)
         {
             if (_server == null) return;
-
+            _discovery?.Stop();
+            _discovery = null;
             _server.Stop();
 
             btnStart.Enabled = true;

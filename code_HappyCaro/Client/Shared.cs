@@ -78,4 +78,11 @@ namespace Client
         public static string Serialize(object obj) => JsonSerializer.Serialize(obj, Options);
         public static T Deserialize<T>(string json) => JsonSerializer.Deserialize<T>(json, Options);
     }
+
+    public enum NetworkMode
+    {
+        Local, // Client & Server same machine
+        Lan, // Auto-discovery via UDP
+        Internet // Manual IP / domain
+    }
 }

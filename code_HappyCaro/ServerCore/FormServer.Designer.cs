@@ -89,7 +89,7 @@ namespace ServerCore
             this.txtPort.Name = "txtPort";
             this.txtPort.Size = new System.Drawing.Size(60, 24);
             this.txtPort.TabIndex = 3;
-            this.txtPort.Text = "9999";
+            this.txtPort.Text = "8888";
             // 
             // btnStart
             // 

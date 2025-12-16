@@ -8,41 +8,38 @@ namespace Client
 {
     public class DiscoveryListener
     {
-        public event Action<string, int> OnServerFound;
-        private UdpClient _udp;
-        private bool _running = false;
         private const int DISCOVERY_PORT = 9998;
+        private UdpClient _udp;
+        private bool _found = false;
 
-        public void StartListening()
+
+        public event Action<string, int> OnServerFound;
+
+
+        public void Start()
         {
-            if (_running) return;
-            _running = true;
             _udp = new UdpClient(DISCOVERY_PORT);
-            _ = Task.Run(async () =>
+            Task.Run(async () =>
             {
-                while (_running)
+                while (!_found)
                 {
-                    try
+                    var res = await _udp.ReceiveAsync();
+                    var msg = Encoding.UTF8.GetString(res.Buffer);
+                    var p = msg.Split('|');
+                    if (p.Length == 3 && p[0] == "HAPPY_CARO_SERVER")
                     {
-                        var res = await _udp.ReceiveAsync();
-                        string msg = Encoding.UTF8.GetString(res.Buffer);
-                        var parts = msg.Split('|');
-                        if (parts.Length == 3 && parts[0] == "HAPPY_CARO_SERVER")
-                        {
-                            string ip = parts[1];
-                            if (int.TryParse(parts[2], out int port))
-                                OnServerFound?.Invoke(ip, port);
-                        }
+                        _found = true;
+                        OnServerFound?.Invoke(p[1], int.Parse(p[2]));
+                        _udp.Close();
                     }
-                    catch { await Task.Delay(100); }
                 }
             });
         }
 
         public void Stop()
         {
-            _running = false;
             try { _udp?.Close(); } catch { }
         }
+
     }
 }
