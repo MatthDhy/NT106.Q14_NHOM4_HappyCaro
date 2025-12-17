@@ -14,9 +14,18 @@ namespace ServerCore.ServerCore
         private readonly int _port;
         private const int DISCOVERY_PORT = 9998;
 
-        public DiscoveryBroadcaster(string serverIp, int port)
+        private static string GetLocalIPv4()
         {
-            _serverIp = serverIp ?? "0.0.0.0";
+            foreach (var ip in Dns.GetHostEntry(Dns.GetHostName()).AddressList)
+            {
+                if (ip.AddressFamily == AddressFamily.InterNetwork)
+                    return ip.ToString();
+            }
+            return "127.0.0.1";
+        }
+
+        public DiscoveryBroadcaster(int port)
+        {
             _port = port;
             _udp = new UdpClient();
             _udp.EnableBroadcast = true;
@@ -57,14 +66,17 @@ namespace ServerCore.ServerCore
         {
             try
             {
-                string msg = $"HAPPY_CARO_SERVER|{_serverIp}|{_port}";
+                string ip = GetLocalIPv4();
+                string msg = $"HAPPY_CARO_SERVER|{ip}|{_port}";
                 byte[] dat = Encoding.UTF8.GetBytes(msg);
-                _udp.Send(dat, dat.Length, new IPEndPoint(IPAddress.Broadcast, DISCOVERY_PORT));
+                _udp.Send(dat, dat.Length,
+                    new IPEndPoint(IPAddress.Broadcast, DISCOVERY_PORT));
             }
             catch (Exception ex)
             {
                 Server.Log($"Discovery broadcast error: {ex.Message}");
             }
         }
+
     }
 }

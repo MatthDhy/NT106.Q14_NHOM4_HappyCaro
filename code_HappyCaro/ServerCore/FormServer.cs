@@ -10,7 +10,7 @@ namespace ServerCore
     {
         private Server _server;
         private DiscoveryBroadcaster _discovery;
-        private bool _lanMode = false; // false = LOCAL | true = LAN
+        private bool _lanMode = true; // true = LAN | false = LOCAL
 
 
         public FormServer()
@@ -43,11 +43,12 @@ namespace ServerCore
             _server = new Server(port);
             _server.Start();
 
+            // ===== CHỈ BẬT DISCOVERY KHI LAN =====
             if (_lanMode)
             {
-                string ip = lblIP.Text; // IP LAN đã load sẵn
-                _discovery = new DiscoveryBroadcaster(ip, port);
+                _discovery = new DiscoveryBroadcaster(port);
                 _discovery.Start();
+                Log("LAN discovery enabled.");
             }
 
             btnStart.Enabled = false;
@@ -61,10 +62,11 @@ namespace ServerCore
 
         private void btnStop_Click(object sender, EventArgs e)
         {
-            if (_server == null) return;
             _discovery?.Stop();
             _discovery = null;
-            _server.Stop();
+
+            _server?.Stop();
+            _server = null;
 
             btnStart.Enabled = true;
             btnStop.Enabled = false;
@@ -77,6 +79,7 @@ namespace ServerCore
 
             Log("Server stopped.");
         }
+
 
         private void Log(string msg)
         {

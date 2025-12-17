@@ -7,9 +7,8 @@ namespace Client
 {
     internal static class Program
     {
-        // Fallback nếu Discovery không tìm thấy server
-        private const string DEFAULT_IP = "127.0.0.1";
-        private const int DEFAULT_PORT = 8888;
+        private const string LOCAL_IP = "127.0.0.1";
+        private const int PORT = 8888;
 
         [STAThread]
         static void Main()
@@ -24,33 +23,81 @@ namespace Client
             // ================================
             // CHỌN MODE Ở ĐÂY
             // ================================
-            NetworkMode mode = NetworkMode.Local;
+            NetworkMode mode = NetworkMode.LanWithFallback;
+            // NetworkMode.Local;
             // NetworkMode.Lan;
             // NetworkMode.Internet;
 
+            // Form chính (login)
+            LoginForm loginForm = null;
+
+            tcp.OnConnected += () =>
+            {
+                // đảm bảo chạy trên UI thread
+                if (loginForm != null && loginForm.IsHandleCreated)
+                    return;
+
+                Application.OpenForms[0]?.BeginInvoke(new Action(() =>
+                {
+                    loginForm = new LoginForm(request, dispatcher);
+                    loginForm.Show();
+                }));
+            };
+
+            tcp.OnDisconnected += () =>
+            {
+                MessageBox.Show(
+                    "Mất kết nối tới server",
+                    "Network",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+            };
+
+            // Form rỗng giữ message loop
+            var bootstrap = new Form
+            {
+                WindowState = FormWindowState.Minimized,
+                ShowInTaskbar = false
+            };
+
+            // ===== KẾT NỐI =====
             switch (mode)
             {
                 case NetworkMode.Local:
-                    StartLocal(tcp);
+                    tcp.Connect(LOCAL_IP, PORT);
                     break;
 
                 case NetworkMode.Lan:
                     StartLan(tcp);
                     break;
 
+                case NetworkMode.LanWithFallback:
+                    StartLanWithFallback(tcp);
+                    break;
+
                 case NetworkMode.Internet:
-                    StartInternet(tcp, "your.public.ip", 8888);
+                    tcp.Connect("your.public.ip", PORT);
                     break;
             }
 
-            Application.Run(new LoginForm(request, dispatcher));
-        }
-        static void StartLocal(TcpClientHelper tcp)
-        {
-            tcp.Connect("127.0.0.1", 8888);
+            Application.Run(bootstrap);
         }
 
         static void StartLan(TcpClientHelper tcp)
+        {
+            var discovery = new DiscoveryListener();
+
+            discovery.OnServerFound += (ip, port) =>
+            {
+                discovery.Stop();
+                tcp.Connect(ip, port);
+            };
+
+            discovery.Start();
+        }
+
+        static void StartLanWithFallback(TcpClientHelper tcp)
         {
             var discovery = new DiscoveryListener();
             bool connected = false;
@@ -70,25 +117,10 @@ namespace Client
             {
                 if (!connected && !tcp.IsConnected)
                 {
-                    MessageBox.Show(
-                        "Không tìm thấy server LAN",
-                        "LAN",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning
-                    );
+                    discovery.Stop();
+                    tcp.Connect(LOCAL_IP, PORT);
                 }
             });
-
-            Application.ApplicationExit += (s, e) =>
-            {
-                discovery.Stop();
-                tcp.Dispose();
-            };
         }
-        static void StartInternet(TcpClientHelper tcp, string ip, int port)
-        {
-            tcp.Connect(ip, port);
-        }
-
     }
 }

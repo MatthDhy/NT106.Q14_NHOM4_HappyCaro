@@ -83,6 +83,7 @@ namespace Client
     {
         Local, // Client & Server same machine
         Lan, // Auto-discovery via UDP
+        LanWithFallback,
         Internet // Manual IP / domain
     }
 }

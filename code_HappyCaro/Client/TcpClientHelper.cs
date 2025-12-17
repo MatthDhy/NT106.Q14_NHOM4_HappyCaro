@@ -11,114 +11,84 @@ namespace Client
     {
         private TcpClient _client;
         private NetworkStream _stream;
-        private readonly ConcurrentQueue<byte[]> _sendQueue = new ConcurrentQueue<byte[]>();
-        private CancellationTokenSource _cts = new CancellationTokenSource();
-        private Task _sendTask;
-        private Task _receiveTask;
-        private Task _heartbeatTask;
+
+        // .NET 4.8 KHÔNG DÙNG new()
+        private readonly ConcurrentQueue<byte[]> _sendQueue =
+            new ConcurrentQueue<byte[]>();
+
+        private CancellationTokenSource _cts;
 
         public event Action<MessageEnvelope> OnEnvelopeReceived;
         public event Action OnConnected;
         public event Action OnDisconnected;
-        public bool IsConnected => _client?.Connected ?? false;
 
-        private string _serverIp;
-        private int _serverPort;
+        public bool IsConnected
+        {
+            get { return _client != null && _client.Connected; }
+        }
+
+        private string _ip;
+        private int _port;
 
         public void Connect(string ip, int port)
         {
-            _serverIp = ip; _serverPort = port;
-            _ = Task.Run(async () =>
+            _ip = ip;
+            _port = port;
+
+            Task.Run(async () =>
             {
-                while (!_cts.IsCancellationRequested)
+                try
                 {
-                    try
-                    {
-                        _client = new TcpClient();
-                        await _client.ConnectAsync(ip, port);
-                        _stream = _client.GetStream();
-                        OnConnected?.Invoke();
+                    _cts = new CancellationTokenSource();
 
-                        _sendTask = Task.Run(SendLoop);
-                        _receiveTask = Task.Run(ReceiveLoop);
-                        _heartbeatTask = Task.Run(HeartbeatLoop);
+                    _client = new TcpClient();
+                    await _client.ConnectAsync(ip, port);
 
-                        break;
-                    }
-                    catch
-                    {
-                        await Task.Delay(3000);
-                    }
+                    _stream = _client.GetStream();
+
+                    if (OnConnected != null)
+                        OnConnected();
+
+                    Task.Run((Func<Task>)SendLoop);
+                    Task.Run((Func<Task>)ReceiveLoop);
+                }
+                catch
+                {
+                    if (OnDisconnected != null)
+                        OnDisconnected();
                 }
             });
         }
 
         public void EnqueueSend(MessageEnvelope env)
         {
+            if (!IsConnected) return;
+
             string json = JsonHelper.Serialize(env);
-            var body = Encoding.UTF8.GetBytes(json);
-            var prefix = BitConverter.GetBytes(body.Length);
-            var packet = new byte[prefix.Length + body.Length];
-            Buffer.BlockCopy(prefix, 0, packet, 0, prefix.Length);
-            Buffer.BlockCopy(body, 0, packet, prefix.Length, body.Length);
+            byte[] body = Encoding.UTF8.GetBytes(json);
+            byte[] len = BitConverter.GetBytes(body.Length);
+
+            byte[] packet = new byte[len.Length + body.Length];
+            Buffer.BlockCopy(len, 0, packet, 0, 4);
+            Buffer.BlockCopy(body, 0, packet, 4, body.Length);
+
             _sendQueue.Enqueue(packet);
         }
 
         private async Task SendLoop()
         {
-            while (!_cts.IsCancellationRequested && _client?.Connected == true)
-            {
-                try
-                {
-                    if (_sendQueue.TryDequeue(out var pkt))
-                    {
-                        await _stream.WriteAsync(pkt, 0, pkt.Length, _cts.Token);
-                    }
-                    else await Task.Delay(10, _cts.Token);
-                }
-                catch
-                {
-                    TriggerDisconnect();
-                }
-            }
-        }
-
-        private async Task ReceiveLoop()
-        {
             try
             {
-                var lenBuf = new byte[4];
-                while (!_cts.IsCancellationRequested && _client?.Connected == true)
+                while (!_cts.IsCancellationRequested && IsConnected)
                 {
-                    int read = 0;
-                    while (read < 4)
+                    byte[] pkt;
+                    if (_sendQueue.TryDequeue(out pkt))
                     {
-                        int r = await _stream.ReadAsync(lenBuf, read, 4 - read, _cts.Token);
-                        if (r == 0) { TriggerDisconnect(); return; }
-                        read += r;
+                        await _stream.WriteAsync(pkt, 0, pkt.Length);
                     }
-
-                    int len = BitConverter.ToInt32(lenBuf, 0);
-                    if (len <= 0) continue;
-
-                    var body = new byte[len];
-                    int total = 0;
-                    while (total < len)
+                    else
                     {
-                        int r = await _stream.ReadAsync(body, total, len - total, _cts.Token);
-                        if (r == 0) { TriggerDisconnect(); return; }
-                        total += r;
-                    }
-
-                    var json = Encoding.UTF8.GetString(body);
-                    try
-                    {
-                        var env = JsonHelper.Deserialize<MessageEnvelope>(json);
-                        OnEnvelopeReceived?.Invoke(env);
-                    }
-                    catch
-                    {
-                        // ignore malformed
+                        await Task.Delay(5);
                     }
                 }
             }
@@ -128,34 +98,77 @@ namespace Client
             }
         }
 
-        private async Task HeartbeatLoop()
+        private async Task ReceiveLoop()
         {
-            while (!_cts.IsCancellationRequested && _client?.Connected == true)
+            try
             {
-                try
+                byte[] lenBuf = new byte[4];
+
+                while (!_cts.IsCancellationRequested && IsConnected)
                 {
-                    EnqueueSend(new MessageEnvelope { Type = MessageType.PING, Payload = "" });
-                    await Task.Delay(3000, _cts.Token);
+                    await ReadExact(lenBuf, 4);
+                    int len = BitConverter.ToInt32(lenBuf, 0);
+
+                    byte[] body = new byte[len];
+                    await ReadExact(body, len);
+
+                    string json = Encoding.UTF8.GetString(body);
+                    MessageEnvelope env =
+                        JsonHelper.Deserialize<MessageEnvelope>(json);
+
+                    if (OnEnvelopeReceived != null)
+                        OnEnvelopeReceived(env);
                 }
-                catch { await Task.Delay(3000); }
+            }
+            catch
+            {
+                TriggerDisconnect();
+            }
+        }
+
+        private async Task ReadExact(byte[] buf, int size)
+        {
+            int read = 0;
+            while (read < size)
+            {
+                int r = await _stream.ReadAsync(buf, read, size - read);
+                if (r == 0)
+                    throw new Exception("Disconnected");
+
+                read += r;
             }
         }
 
         private void TriggerDisconnect()
         {
-            try { _cts.Cancel(); } catch { }
-            try { _client?.Close(); } catch { }
-            OnDisconnected?.Invoke();
+            Dispose();
 
-            // attempt reconnect
-            _cts = new CancellationTokenSource();
-            Task.Delay(1000).ContinueWith(_ => Connect(_serverIp, _serverPort));
+            if (OnDisconnected != null)
+                OnDisconnected();
         }
 
         public void Dispose()
         {
-            try { _cts.Cancel(); } catch { }
-            try { _client?.Close(); } catch { }
+            try
+            {
+                if (_cts != null)
+                    _cts.Cancel();
+            }
+            catch { }
+
+            try
+            {
+                if (_stream != null)
+                    _stream.Close();
+            }
+            catch { }
+
+            try
+            {
+                if (_client != null)
+                    _client.Close();
+            }
+            catch { }
         }
     }
 }

@@ -65,7 +65,6 @@ namespace ServerCore.ServerCore
                     return;
                 }
 
-
                 if (Services.Database.GetUser(username) != null)
                 {
                     client.SendEnvelope(MessageType.AUTH_REGISTER_FAIL, JsonHelper.Serialize(new { ok = false, reason = "UsernameExists" }));
