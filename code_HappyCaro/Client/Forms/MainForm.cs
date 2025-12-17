@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Client.Forms;
+using System;
 using System.Collections.Generic;
-using System.Windows.Forms;
+using System.IO;
 using System.Text.Json;
-using Client.Forms;
+using System.Windows.Forms;
+using System.Drawing;
 
 namespace Client.Forms
 {
@@ -47,6 +49,31 @@ namespace Client.Forms
                 AudioManager.Init(musicPath);
             }
             catch { }
+
+            try
+            {
+                // Đường dẫn đến thư mục Avatars
+                string avatarPath = Path.Combine(Application.StartupPath, "Avatars");
+
+                if (Directory.Exists(avatarPath))
+                {
+                    // Lấy danh sách tất cả file ảnh (.png, .jpg, .jpeg)
+                    // GetFiles trả về danh sách đường dẫn
+                    var files = Directory.GetFiles(avatarPath, "*.*");
+
+                    if (files.Length > 0)
+                    {
+                        Random rnd = new Random();
+                        int index = rnd.Next(0, files.Length); 
+
+                        pBoxAvatar.Image = Image.FromFile(files[index]);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                
+            }
 
             // Lấy bảng xếp hạng
             _request.RequestRanking();
