@@ -38,6 +38,11 @@ namespace Client.Forms
                 MessageBox.Show("Vui lòng nhập mật khẩu", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }
+            if (txtPassword.Text.Length < 6)
+            {
+                MessageBox.Show("Mật khẩu phải từ 6 kí tự", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
             if (txtPassword.Text != txtConfirmPass.Text)
             {
                 MessageBox.Show("Mật khẩu không trùng khớp", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);

@@ -118,7 +118,8 @@ namespace Client.Forms
 
         private void lnkForgotPass_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            MessageBox.Show("Tính năng đang được phát triển.");
+            ForgotPasswordForm f = new ForgotPasswordForm(this._clientRequest);
+            f.Show();
         }
 
         private void Unsubscribe()
