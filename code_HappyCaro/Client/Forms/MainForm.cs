@@ -142,21 +142,29 @@ namespace Client.Forms
             try
             {
                 var data = JsonHelper.Deserialize<JsonElement>(json);
-                int roomId = GetInt(data, "roomId");
+                int roomId = 0;
+                if (data.TryGetProperty("roomId", out var id)) roomId = id.GetInt32();
 
-                // Tạo phòng: Mình là chủ, đối thủ chưa có, mình đi trước
+                MessageBox.Show($"Tạo phòng thành công!\nMÃ PHÒNG: {roomId}\nHãy gửi mã này cho bạn của bạn.", "Thông báo Mã Phòng");
+
                 OpenGameForm(roomId, _user.Username, "", _user.Username);
             }
             catch (Exception ex) { MessageBox.Show("Lỗi tạo phòng: " + ex.Message); }
         }
 
-        // ==========================================================
-        // VÀO PHÒNG (JOIN)
-        // ==========================================================
         private void btnFindRoom_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Chức năng tìm phòng đang phát triển!");
-            // Bạn có thể mở form nhập ID phòng ở đây sau này
+            // Tạo form nhập mã
+            InputRoomIdForm inputForm = new InputRoomIdForm();
+
+            // Nếu người dùng nhập xong và bấm OK
+            if (inputForm.ShowDialog() == DialogResult.OK)
+            {
+                int roomId = inputForm.RoomId;
+
+                // Gửi yêu cầu vào phòng tới Server
+                _request.JoinRoom(roomId);
+            }
         }
 
         private void OnRoomJoined(string json)

@@ -78,7 +78,7 @@
             this.btnPlayNow.Animated = true;
             this.btnPlayNow.AutoRoundedCorners = true;
             this.btnPlayNow.BackColor = System.Drawing.Color.Transparent;
-            this.btnPlayNow.BorderRadius = 36;
+            this.btnPlayNow.BorderRadius = 52;
             this.btnPlayNow.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
             this.btnPlayNow.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
             this.btnPlayNow.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
@@ -91,7 +91,7 @@
             this.btnPlayNow.Location = new System.Drawing.Point(506, 500);
             this.btnPlayNow.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btnPlayNow.Name = "btnPlayNow";
-            this.btnPlayNow.Size = new System.Drawing.Size(450, 75);
+            this.btnPlayNow.Size = new System.Drawing.Size(450, 106);
             this.btnPlayNow.TabIndex = 8;
             this.btnPlayNow.Text = "CHƠI NGAY (GHÉP NGẪU NHIÊN)";
             this.btnPlayNow.Click += new System.EventHandler(this.btnPlayNow_Click);
@@ -329,11 +329,11 @@
             // pBoxAvatar
             // 
             this.pBoxAvatar.ImageRotate = 0F;
-            this.pBoxAvatar.Location = new System.Drawing.Point(17, 75);
+            this.pBoxAvatar.Location = new System.Drawing.Point(17, 87);
             this.pBoxAvatar.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.pBoxAvatar.Name = "pBoxAvatar";
             this.pBoxAvatar.ShadowDecoration.Mode = Guna.UI2.WinForms.Enums.ShadowMode.Circle;
-            this.pBoxAvatar.Size = new System.Drawing.Size(90, 100);
+            this.pBoxAvatar.Size = new System.Drawing.Size(90, 88);
             this.pBoxAvatar.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.pBoxAvatar.TabIndex = 0;
             this.pBoxAvatar.TabStop = false;
