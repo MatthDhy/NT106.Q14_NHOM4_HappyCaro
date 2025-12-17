@@ -56,9 +56,12 @@ namespace ServerCore.ServerCore
             private static async Task SendResetEmailAsync(string toEmail, string token)
             {
                 var message = new MimeMessage();
-                message.From.Add(new MailboxAddress("HappyCaro Support", "yourgmail@gmail.com"));
+                message.From.Add(new MailboxAddress(
+                    "HappyCaro Support",
+                    "no-reply@happycaro.local"
+                ));
                 message.To.Add(new MailboxAddress("", toEmail));
-                message.Subject = "HappyCaro - Reset Password Token";
+                message.Subject = "HappyCaro - Reset Password";
 
                 message.Body = new TextPart("plain")
                 {
@@ -67,8 +70,16 @@ namespace ServerCore.ServerCore
 
                 using (var client = new SmtpClient())
                 {
-                    await client.ConnectAsync("smtp.gmail.com", 465, true);
-                    await client.AuthenticateAsync("yourgmail@gmail.com", "YOUR_APP_PASSWORD");
+                    await client.ConnectAsync(
+                        "sandbox.smtp.mailtrap.io", // HOST
+                        2525,                       // PORT
+                        false                       // TLS = false
+                    );
+
+                    await client.AuthenticateAsync(
+                        "f09cf899a913cc",           // USERNAME (Mailtrap)
+                        "cb2073f539a37c"           // PASSWORD (Mailtrap)
+                    );
 
                     await client.SendAsync(message);
                     await client.DisconnectAsync(true);
@@ -76,16 +87,15 @@ namespace ServerCore.ServerCore
             }
 
 
+
             // ============================
             // REQUEST FORGOT PASSWORD
             // ============================
             public static async Task<bool> HandleForgotPasswordAsync(string email)
             {
-                await Task.Delay(10);
-
                 var user = Database.GetUserByEmail(email);
                 if (user == null)
-                    return true; // không tiết lộ email có tồn tại
+                    return true;
 
                 string token = new Random().Next(100000, 999999).ToString();
 
@@ -94,16 +104,23 @@ namespace ServerCore.ServerCore
                     _resetTokens[email] = new ResetTokenInfo
                     {
                         Token = token,
-                        ExpireAt = DateTime.Now.AddMinutes(5) // hết hạn sau 5 phút
+                        ExpireAt = DateTime.Now.AddMinutes(5)
                     };
                 }
 
-                Console.WriteLine($"[RESET TOKEN] {email} => {token}");
-
-                await SendResetEmailAsync(email, token);
-
-                return true;
+                try
+                {
+                    await SendResetEmailAsync(email, token);
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("SMTP ERROR: " + ex.Message);
+                    return false;
+                }
             }
+
+
 
 
             // ============================

@@ -129,14 +129,34 @@ namespace ServerCore.ServerCore
                     case MessageType.AUTH_RESET_REQUEST:
                         {
                             var payload = JsonHelper.Deserialize<AuthRequestPayload>(env.Payload);
-                            _ = Services.Auth.HandleForgotPasswordAsync(payload.Email)
-                                .ContinueWith(t =>
+
+                            _ = Task.Run(async () =>
+                            {
+                                try
                                 {
-                                    var respMsg = "If your email exists, a reset code has been sent.";
-                                    SendEnvelope(t.Result ? MessageType.AUTH_RESET_OK : MessageType.AUTH_RESET_FAIL, JsonHelper.Serialize(new { message = respMsg }));
-                                });
+                                    bool ok = await Services.Auth.HandleForgotPasswordAsync(payload.Email);
+
+                                    SendEnvelope(
+                                        MessageType.AUTH_RESET_OK,
+                                        JsonHelper.Serialize(new
+                                        {
+                                            message = "If your email exists, a reset code has been sent."
+                                        })
+                                    );
+                                }
+                                catch (Exception ex)
+                                {
+                                    Server.Log("RESET ERROR: " + ex.Message);
+
+                                    SendEnvelope(
+                                        MessageType.AUTH_RESET_FAIL,
+                                        JsonHelper.Serialize(new { message = "Reset password failed" })
+                                    );
+                                }
+                            });
+
+                            break;
                         }
-                        break;
                     case MessageType.AUTH_RESET_VERIFY:
                         {
                             var p = JsonHelper.Deserialize<ResetVerifyPayload>(env.Payload);
