@@ -41,7 +41,7 @@ namespace Client
             => Send(MessageType.ROOM_CREATE, new { });
 
         public void JoinRoom(int roomId)
-            => Send(MessageType.ROOM_JOIN, new { roomId });
+            => Send(MessageType.ROOM_JOIN, roomId);
 
         public void LeaveRoom()
             => Send(MessageType.ROOM_LEAVE, new { });
