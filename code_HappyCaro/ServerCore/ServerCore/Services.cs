@@ -58,33 +58,43 @@ namespace ServerCore.ServerCore
                 var message = new MimeMessage();
                 message.From.Add(new MailboxAddress(
                     "HappyCaro Support",
-                    "no-reply@happycaro.local"
+                    "huygiavirus@gmail.com"
                 ));
-                message.To.Add(new MailboxAddress("", toEmail));
+                message.To.Add(MailboxAddress.Parse(toEmail));
                 message.Subject = "HappyCaro - Reset Password";
 
                 message.Body = new TextPart("plain")
                 {
-                    Text = $"Your reset token is: {token}\nThis code expires in 5 minutes."
+                    Text =
+            $@"Hello,
+
+Your password reset code is: {token}
+
+This code will expire in 5 minutes.
+If you did not request this, please ignore this email.
+
+HappyCaro Team!"
                 };
 
                 using (var client = new SmtpClient())
                 {
+                    // Gmail SMTP
                     await client.ConnectAsync(
-                        "sandbox.smtp.mailtrap.io", // HOST
-                        2525,                       // PORT
-                        false                       // TLS = false
+                        "smtp.gmail.com",
+                        587,
+                        MailKit.Security.SecureSocketOptions.StartTls
                     );
 
                     await client.AuthenticateAsync(
-                        "f09cf899a913cc",           // USERNAME (Mailtrap)
-                        "cb2073f539a37c"           // PASSWORD (Mailtrap)
+                        "huygiavirus@gmail.com",
+                        "fzsgvqadglzvccoz" // app password (không có dấu cách)
                     );
 
                     await client.SendAsync(message);
                     await client.DisconnectAsync(true);
                 }
             }
+
 
 
 
