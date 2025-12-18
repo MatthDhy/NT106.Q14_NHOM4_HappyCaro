@@ -23,6 +23,7 @@ namespace Client.Forms
             _dispatcher.OnRegisterSuccess += HandleRegisterSuccess;
             _dispatcher.OnRegisterFail += HandleRegisterFail;
 
+            lnkLogin.LinkClicked -= lnkLogin_LinkClicked;
             lnkLogin.LinkClicked += lnkLogin_LinkClicked;
         }
 
@@ -118,8 +119,19 @@ namespace Client.Forms
 
         private void lnkLogin_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            Unsubscribe();
+            // Tìm xem có LoginForm nào đang mở sẵn không
+            foreach (Form f in Application.OpenForms)
+            {
+                if (f is LoginForm)
+                {
+                    f.Show();
+                    f.BringToFront();
+                    this.Close();
+                    return; // Thoát luôn, không new thêm cái nào nữa
+                }
+            }
 
+            // Nếu không tìm thấy cái nào thì mới tạo mới
             var login = new LoginForm(_clientRequest, _dispatcher);
             login.Show();
             this.Close();
