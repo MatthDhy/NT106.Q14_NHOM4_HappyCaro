@@ -7,7 +7,7 @@ namespace Client
 {
     internal static class Program
     {
-        private const string LOCAL_IP = "127.0.0.1";
+        private const string LOCAL_IP = "192.168.81.1";
         private const int PORT = 8888;
 
         [STAThread]
