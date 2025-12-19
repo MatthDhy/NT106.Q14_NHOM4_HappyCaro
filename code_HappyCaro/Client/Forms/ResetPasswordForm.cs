@@ -15,14 +15,18 @@ namespace Client.Forms
     public partial class ResetPasswordForm: Form
     {
         private readonly Client.ClientRequest _request;
+        private readonly Client.ClientDispatcher _dispatcher;
         private readonly string _email;
         private readonly string _otp;
-        public ResetPasswordForm(Client.ClientRequest request, string email, string otp)
+        public ResetPasswordForm(Client.ClientRequest request, Client.ClientDispatcher dispatcher, string email, string otp)
         {
             InitializeComponent();
             _request = request;
+            _dispatcher = dispatcher;
             _email = email;
             _otp = otp;
+
+
         }
 
         private void btnFinish_Click(object sender, EventArgs e)

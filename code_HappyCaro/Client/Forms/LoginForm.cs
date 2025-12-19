@@ -72,7 +72,7 @@ namespace Client.Forms
 
                 var main = new MainForm(_dispatcher, user.Username, user.RankPoint, user.Wins, user.Losses);
                 main.Show();
-                this.Hide();
+                this.Dispose();
             }
             catch (Exception ex)
             {
@@ -110,15 +110,28 @@ namespace Client.Forms
 
         private void lnkRegister_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
+            
             var reg = new RegisterForm(_clientRequest, _dispatcher);
-            //reg.FormClosed += (s, t) => this.Show();
+
+            // Khi RegisterForm đóng, ta cần đăng ký lại sự kiện cho Form hiện tại
+            reg.FormClosed += (s, t) =>
+            {
+                // Kiểm tra nếu Form này chưa bị hủy (không phải trường hợp đăng ký thành công)
+                if (!this.IsDisposed)
+                {
+                    _dispatcher.OnLoginSuccess += HandleLoginSuccess;
+                    _dispatcher.OnLoginFail += HandleLoginFail;
+                }
+            };
+
+            Unsubscribe(); // Vẫn giữ Unsubscribe để tránh nhận tin khi đang ở Form Register
             this.Hide();
             reg.Show();
         }
 
         private void lnkForgotPass_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            ForgotPasswordForm f = new ForgotPasswordForm(this._clientRequest);
+            ForgotPasswordForm f = new ForgotPasswordForm(this._clientRequest,this._dispatcher);
             f.Show();
         }
 

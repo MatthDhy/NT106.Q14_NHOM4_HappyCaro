@@ -82,6 +82,14 @@ namespace Client.Forms
 
             var login = new LoginForm(_clientRequest, _dispatcher);
             login.Show();
+            for (int i = Application.OpenForms.Count - 1; i >= 0; i--)
+            {
+                Form f = Application.OpenForms[i];
+                if (f is LoginForm && f != login)
+                {
+                    f.Dispose();
+                }
+            }
             this.Close();
         }
 
@@ -133,6 +141,22 @@ namespace Client.Forms
         private void RegisterForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             Unsubscribe();
+            if (e.CloseReason == CloseReason.UserClosing)
+            {
+                // Tìm lại LoginForm cũ đang bị ẩn để hiện nó lên
+                foreach (Form f in Application.OpenForms)
+                {
+                    if (f is LoginForm)
+                    {
+                        f.Show();
+                        return; // Tìm thấy rồi thì hiện lên và thoát hàm
+                    }
+                }
+
+                // Nếu lỡ không tìm thấy Form cũ, thì mới mở một cái mới để tránh treo app
+                var login = new LoginForm(_clientRequest, _dispatcher);
+                login.Show();
+            }
         }
 
         private class ErrorResponse
