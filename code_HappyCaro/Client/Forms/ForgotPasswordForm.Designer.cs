@@ -83,7 +83,7 @@
             this.btnSendOTP.BorderRadius = 21;
             this.btnSendOTP.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(192)))), ((int)(((byte)(192)))));
             this.btnSendOTP.FillColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(200)))), ((int)(((byte)(250)))));
-            this.btnSendOTP.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.btnSendOTP.Font = new System.Drawing.Font("Segoe UI", 13.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnSendOTP.ForeColor = System.Drawing.Color.White;
             this.btnSendOTP.Location = new System.Drawing.Point(315, 190);
             this.btnSendOTP.Name = "btnSendOTP";
@@ -98,7 +98,7 @@
             this.txtOTP.BorderRadius = 5;
             this.txtOTP.Cursor = System.Windows.Forms.Cursors.IBeam;
             this.txtOTP.DefaultText = "";
-            this.txtOTP.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F);
+            this.txtOTP.Font = new System.Drawing.Font("Segoe UI", 10.2F);
             this.txtOTP.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(200)))));
             this.txtOTP.Location = new System.Drawing.Point(240, 260);
             this.txtOTP.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
@@ -114,7 +114,7 @@
             this.txtEmail.BorderRadius = 5;
             this.txtEmail.Cursor = System.Windows.Forms.Cursors.IBeam;
             this.txtEmail.DefaultText = "";
-            this.txtEmail.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F);
+            this.txtEmail.Font = new System.Drawing.Font("Segoe UI", 10.2F);
             this.txtEmail.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(200)))));
             this.txtEmail.Location = new System.Drawing.Point(240, 130);
             this.txtEmail.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);

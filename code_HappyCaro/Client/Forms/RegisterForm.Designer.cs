@@ -73,7 +73,7 @@
             this.txtConfirmPass.HoverState.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(94)))), ((int)(((byte)(148)))), ((int)(((byte)(255)))));
             this.txtConfirmPass.IconLeft = global::Client.Properties.Resources.confirm;
             this.txtConfirmPass.Location = new System.Drawing.Point(238, 264);
-            this.txtConfirmPass.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtConfirmPass.Margin = new System.Windows.Forms.Padding(4);
             this.txtConfirmPass.Name = "txtConfirmPass";
             this.txtConfirmPass.PlaceholderForeColor = System.Drawing.Color.Gray;
             this.txtConfirmPass.PlaceholderText = "Xác nhận mật khẩu";
@@ -95,7 +95,7 @@
             this.txtEmail.HoverState.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(94)))), ((int)(((byte)(148)))), ((int)(((byte)(255)))));
             this.txtEmail.IconLeft = global::Client.Properties.Resources.email;
             this.txtEmail.Location = new System.Drawing.Point(238, 325);
-            this.txtEmail.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtEmail.Margin = new System.Windows.Forms.Padding(4);
             this.txtEmail.Name = "txtEmail";
             this.txtEmail.PlaceholderForeColor = System.Drawing.Color.Gray;
             this.txtEmail.PlaceholderText = "Email";
@@ -117,7 +117,7 @@
             this.txtPassword.HoverState.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(94)))), ((int)(((byte)(148)))), ((int)(((byte)(255)))));
             this.txtPassword.IconLeft = global::Client.Properties.Resources._lock;
             this.txtPassword.Location = new System.Drawing.Point(238, 199);
-            this.txtPassword.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtPassword.Margin = new System.Windows.Forms.Padding(4);
             this.txtPassword.Name = "txtPassword";
             this.txtPassword.PlaceholderForeColor = System.Drawing.Color.Gray;
             this.txtPassword.PlaceholderText = "Mật khẩu";
@@ -134,12 +134,12 @@
             this.txtUsername.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(138)))), ((int)(((byte)(138)))), ((int)(((byte)(138)))));
             this.txtUsername.DisabledState.PlaceholderForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(138)))), ((int)(((byte)(138)))), ((int)(((byte)(138)))));
             this.txtUsername.FocusedState.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(94)))), ((int)(((byte)(148)))), ((int)(((byte)(255)))));
-            this.txtUsername.Font = new System.Drawing.Font("Segoe UI", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtUsername.Font = new System.Drawing.Font("Segoe UI", 10.2F);
             this.txtUsername.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(200)))));
             this.txtUsername.HoverState.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(94)))), ((int)(((byte)(148)))), ((int)(((byte)(255)))));
             this.txtUsername.IconLeft = global::Client.Properties.Resources.user;
             this.txtUsername.Location = new System.Drawing.Point(238, 139);
-            this.txtUsername.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtUsername.Margin = new System.Windows.Forms.Padding(4);
             this.txtUsername.Name = "txtUsername";
             this.txtUsername.PlaceholderForeColor = System.Drawing.Color.Gray;
             this.txtUsername.PlaceholderText = "Tên đăng nhập";
@@ -200,7 +200,6 @@
             this.lnkLogin.TabIndex = 17;
             this.lnkLogin.TabStop = true;
             this.lnkLogin.Text = "Bạn đã có tài khoản?";
-            this.lnkLogin.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnkLogin_LinkClicked);
             // 
             // lblTitle
             // 

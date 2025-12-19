@@ -23,6 +23,7 @@ namespace Client.Forms
             _dispatcher.OnRegisterSuccess += HandleRegisterSuccess;
             _dispatcher.OnRegisterFail += HandleRegisterFail;
 
+            lnkLogin.LinkClicked -= lnkLogin_LinkClicked;
             lnkLogin.LinkClicked += lnkLogin_LinkClicked;
         }
 
@@ -81,29 +82,24 @@ namespace Client.Forms
 
             var login = new LoginForm(_clientRequest, _dispatcher);
             login.Show();
+            for (int i = Application.OpenForms.Count - 1; i >= 0; i--)
+            {
+                Form f = Application.OpenForms[i];
+                if (f is LoginForm && f != login)
+                {
+                    f.Dispose();
+                }
+            }
             this.Close();
         }
 
         private void HandleRegisterFail(string payload)
         {
-            if (InvokeRequired)
-            {
-                Invoke(new Action<string>(HandleRegisterFail), payload);
-                return;
-            }
-
+            if (InvokeRequired) { Invoke(new Action<string>(HandleRegisterFail), payload); return; }
             btnRegister.Enabled = true;
 
-            string msg = "Đăng ký thất bại.";
-
-            try
-            {
-                var err = JsonHelper.Deserialize<ErrorResponse>(payload);
-                if (err != null) msg = err.Error;
-            }
-            catch { }
-
-            MessageBox.Show(msg, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            // Hiển thị trực tiếp payload để biết Server đang gửi cái gì về
+            MessageBox.Show("Lỗi từ Server: " + payload, "Lỗi Hệ Thống", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
         private void btnEye_Click(object sender, EventArgs e)
@@ -118,8 +114,19 @@ namespace Client.Forms
 
         private void lnkLogin_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            Unsubscribe();
+            // Tìm xem có LoginForm nào đang mở sẵn không
+            foreach (Form f in Application.OpenForms)
+            {
+                if (f is LoginForm)
+                {
+                    f.Show();
+                    f.BringToFront();
+                    this.Close();
+                    return; // Thoát luôn, không new thêm cái nào nữa
+                }
+            }
 
+            // Nếu không tìm thấy cái nào thì mới tạo mới
             var login = new LoginForm(_clientRequest, _dispatcher);
             login.Show();
             this.Close();
@@ -134,11 +141,28 @@ namespace Client.Forms
         private void RegisterForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             Unsubscribe();
+            if (e.CloseReason == CloseReason.UserClosing)
+            {
+                // Tìm lại LoginForm cũ đang bị ẩn để hiện nó lên
+                foreach (Form f in Application.OpenForms)
+                {
+                    if (f is LoginForm)
+                    {
+                        f.Show();
+                        return; // Tìm thấy rồi thì hiện lên và thoát hàm
+                    }
+                }
+
+                // Nếu lỡ không tìm thấy Form cũ, thì mới mở một cái mới để tránh treo app
+                var login = new LoginForm(_clientRequest, _dispatcher);
+                login.Show();
+            }
         }
 
         private class ErrorResponse
         {
-            public string Error { get; set; }
+            
+            public string Reason { get; set; }
         }
     }
 }

@@ -79,7 +79,7 @@
             this.txtConfirmPass.BorderRadius = 5;
             this.txtConfirmPass.Cursor = System.Windows.Forms.Cursors.IBeam;
             this.txtConfirmPass.DefaultText = "";
-            this.txtConfirmPass.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F);
+            this.txtConfirmPass.Font = new System.Drawing.Font("Segoe UI", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtConfirmPass.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(200)))));
             this.txtConfirmPass.Location = new System.Drawing.Point(250, 234);
             this.txtConfirmPass.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
@@ -97,7 +97,7 @@
             this.txtPassword.BorderRadius = 5;
             this.txtPassword.Cursor = System.Windows.Forms.Cursors.IBeam;
             this.txtPassword.DefaultText = "";
-            this.txtPassword.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F);
+            this.txtPassword.Font = new System.Drawing.Font("Segoe UI", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtPassword.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(200)))));
             this.txtPassword.Location = new System.Drawing.Point(250, 154);
             this.txtPassword.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);

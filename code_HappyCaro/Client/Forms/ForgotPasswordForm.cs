@@ -13,10 +13,16 @@ namespace Client.Forms
     public partial class ForgotPasswordForm: Form
     {
         private readonly Client.ClientRequest _request;
-        public ForgotPasswordForm(Client.ClientRequest request)
+        private readonly Client.ClientDispatcher _dispatcher;
+        public ForgotPasswordForm(Client.ClientRequest request, Client.ClientDispatcher dispatcher)
         {
             InitializeComponent();
             _request = request;
+            _dispatcher = dispatcher;
+
+            // Đăng ký sự kiện: Khi server báo OK thì mới mở Form Reset
+            _dispatcher.OnVerifyOTPSuccess += HandleVerifyOTPSuccess;
+            _dispatcher.OnVerifyOTPFail += HandleVerifyOTPFail;
         }
 
         private async void btnSendOTP_Click(object sender, EventArgs e)
@@ -43,23 +49,37 @@ namespace Client.Forms
             string email = txtEmail.Text.Trim();
             string otp = txtOTP.Text.Trim();
 
+            
+
             if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(otp))
             {
                 MessageBox.Show("Vui lòng nhập đầy đủ Email và mã OTP!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            
+            _request.CheckOTPOnly(email, otp);
+            btnVerify.Enabled = false;
 
-            ResetPasswordForm resetForm = new ResetPasswordForm(_request, email, otp);
-            resetForm.Show();
-
-            // Đóng form hiện tại
-            this.Close();
         }
         private void btnBack_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             this.Close();
+        }
+        private void HandleVerifyOTPSuccess()
+        {
+            if (InvokeRequired) { Invoke(new Action(HandleVerifyOTPSuccess)); return; }
+
+            // CHỈ KHI SERVER BÁO ĐÚNG, FORM MỚI ĐƯỢC MỞ
+            ResetPasswordForm resetForm = new ResetPasswordForm(_request, _dispatcher, txtEmail.Text, txtOTP.Text);
+            resetForm.Show();
+            this.Hide();
+        }
+        private void HandleVerifyOTPFail(string error)
+        {
+            if (InvokeRequired) { Invoke(new Action<string>(HandleVerifyOTPFail), error); return; }
+
+            btnVerify.Enabled = true;
+            MessageBox.Show("Mã OTP không chính xác hoặc đã hết hạn!", "Lỗi");
         }
     }
 }
