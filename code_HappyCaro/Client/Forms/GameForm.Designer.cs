@@ -19,8 +19,10 @@
         {
             this.components = new System.ComponentModel.Container();
             this.pnlBackground = new Guna.UI2.WinForms.Guna2GradientPanel();
+            this.label1 = new System.Windows.Forms.Label();
             this.btnExit = new Guna.UI2.WinForms.Guna2ControlBox();
             this.btnSurrender = new Guna.UI2.WinForms.Guna2GradientButton();
+            this.btnPlayAgain = new Guna.UI2.WinForms.Guna2GradientButton();
             this.grpChat = new Guna.UI2.WinForms.Guna2GroupBox();
             this.btnSend = new Guna.UI2.WinForms.Guna2Button();
             this.txtMessage = new Guna.UI2.WinForms.Guna2TextBox();
@@ -43,8 +45,10 @@
             // 
             // pnlBackground
             // 
+            this.pnlBackground.Controls.Add(this.label1);
             this.pnlBackground.Controls.Add(this.btnExit);
             this.pnlBackground.Controls.Add(this.btnSurrender);
+            this.pnlBackground.Controls.Add(this.btnPlayAgain);
             this.pnlBackground.Controls.Add(this.grpChat);
             this.pnlBackground.Controls.Add(this.lblTurn);
             this.pnlBackground.Controls.Add(this.grpOpponentInfo);
@@ -56,10 +60,22 @@
             this.pnlBackground.FillColor2 = System.Drawing.Color.Indigo;
             this.pnlBackground.GradientMode = System.Drawing.Drawing2D.LinearGradientMode.ForwardDiagonal;
             this.pnlBackground.Location = new System.Drawing.Point(0, 0);
-            this.pnlBackground.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.pnlBackground.Margin = new System.Windows.Forms.Padding(4);
             this.pnlBackground.Name = "pnlBackground";
-            this.pnlBackground.Size = new System.Drawing.Size(1440, 900);
+            this.pnlBackground.Size = new System.Drawing.Size(1800, 1200);
             this.pnlBackground.TabIndex = 0;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.BackColor = System.Drawing.Color.Transparent;
+            this.label1.Font = new System.Drawing.Font("Calibri", 16F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.ForeColor = System.Drawing.SystemColors.ButtonHighlight;
+            this.label1.Location = new System.Drawing.Point(712, 1000);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(374, 39);
+            this.label1.TabIndex = 21;
+            this.label1.Text = "#Vui là chính, thắng là mười";
             // 
             // btnExit
             // 
@@ -67,10 +83,10 @@
             this.btnExit.BackColor = System.Drawing.Color.Transparent;
             this.btnExit.FillColor = System.Drawing.Color.Transparent;
             this.btnExit.IconColor = System.Drawing.Color.White;
-            this.btnExit.Location = new System.Drawing.Point(1389, 0);
-            this.btnExit.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.btnExit.Location = new System.Drawing.Point(1734, 0);
+            this.btnExit.Margin = new System.Windows.Forms.Padding(4);
             this.btnExit.Name = "btnExit";
-            this.btnExit.Size = new System.Drawing.Size(51, 36);
+            this.btnExit.Size = new System.Drawing.Size(66, 48);
             this.btnExit.TabIndex = 6;
             this.btnExit.Click += new System.EventHandler(this.btnExit_Click);
             // 
@@ -79,18 +95,37 @@
             this.btnSurrender.Animated = true;
             this.btnSurrender.AutoRoundedCorners = true;
             this.btnSurrender.BackColor = System.Drawing.Color.Transparent;
-            this.btnSurrender.BorderRadius = 27;
+            this.btnSurrender.BorderRadius = 29;
             this.btnSurrender.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(77)))), ((int)(((byte)(77)))));
             this.btnSurrender.FillColor2 = System.Drawing.Color.Red;
             this.btnSurrender.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
             this.btnSurrender.ForeColor = System.Drawing.Color.White;
-            this.btnSurrender.Location = new System.Drawing.Point(608, 750);
-            this.btnSurrender.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.btnSurrender.Location = new System.Drawing.Point(157, 703);
+            this.btnSurrender.Margin = new System.Windows.Forms.Padding(4);
             this.btnSurrender.Name = "btnSurrender";
-            this.btnSurrender.Size = new System.Drawing.Size(225, 56);
+            this.btnSurrender.Size = new System.Drawing.Size(231, 61);
             this.btnSurrender.TabIndex = 5;
             this.btnSurrender.Text = "XIN THUA";
             this.btnSurrender.Click += new System.EventHandler(this.btnSurrender_Click);
+            // 
+            // btnPlayAgain
+            // 
+            this.btnPlayAgain.Animated = true;
+            this.btnPlayAgain.AutoRoundedCorners = true;
+            this.btnPlayAgain.BackColor = System.Drawing.Color.Transparent;
+            this.btnPlayAgain.BorderRadius = 29;
+            this.btnPlayAgain.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(192)))), ((int)(((byte)(0)))));
+            this.btnPlayAgain.FillColor2 = System.Drawing.Color.Green;
+            this.btnPlayAgain.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
+            this.btnPlayAgain.ForeColor = System.Drawing.Color.White;
+            this.btnPlayAgain.Location = new System.Drawing.Point(157, 703);
+            this.btnPlayAgain.Margin = new System.Windows.Forms.Padding(4);
+            this.btnPlayAgain.Name = "btnPlayAgain";
+            this.btnPlayAgain.Size = new System.Drawing.Size(231, 61);
+            this.btnPlayAgain.TabIndex = 7;
+            this.btnPlayAgain.Text = "VÁN MỚI";
+            this.btnPlayAgain.Visible = false;
+            this.btnPlayAgain.Click += new System.EventHandler(this.btnPlayAgain_Click);
             // 
             // grpChat
             // 
@@ -104,10 +139,10 @@
             this.grpChat.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
             this.grpChat.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
             this.grpChat.ForeColor = System.Drawing.Color.White;
-            this.grpChat.Location = new System.Drawing.Point(1012, 400);
-            this.grpChat.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.grpChat.Location = new System.Drawing.Point(1291, 520);
+            this.grpChat.Margin = new System.Windows.Forms.Padding(4);
             this.grpChat.Name = "grpChat";
-            this.grpChat.Size = new System.Drawing.Size(394, 438);
+            this.grpChat.Size = new System.Drawing.Size(400, 467);
             this.grpChat.TabIndex = 4;
             this.grpChat.Text = "Trò chuyện";
             // 
@@ -117,10 +152,10 @@
             this.btnSend.FillColor = System.Drawing.Color.DeepSkyBlue;
             this.btnSend.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.btnSend.ForeColor = System.Drawing.Color.White;
-            this.btnSend.Location = new System.Drawing.Point(292, 375);
-            this.btnSend.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.btnSend.Location = new System.Drawing.Point(300, 407);
+            this.btnSend.Margin = new System.Windows.Forms.Padding(4);
             this.btnSend.Name = "btnSend";
-            this.btnSend.Size = new System.Drawing.Size(90, 50);
+            this.btnSend.Size = new System.Drawing.Size(85, 48);
             this.btnSend.TabIndex = 2;
             this.btnSend.Text = "Gửi";
             this.btnSend.Click += new System.EventHandler(this.btnSend_Click);
@@ -131,12 +166,12 @@
             this.txtMessage.Cursor = System.Windows.Forms.Cursors.IBeam;
             this.txtMessage.DefaultText = "";
             this.txtMessage.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.txtMessage.Location = new System.Drawing.Point(11, 375);
-            this.txtMessage.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
+            this.txtMessage.Location = new System.Drawing.Point(13, 407);
+            this.txtMessage.Margin = new System.Windows.Forms.Padding(5, 7, 5, 7);
             this.txtMessage.Name = "txtMessage";
             this.txtMessage.PlaceholderText = "Nhập tin nhắn...";
             this.txtMessage.SelectedText = "";
-            this.txtMessage.Size = new System.Drawing.Size(270, 50);
+            this.txtMessage.Size = new System.Drawing.Size(284, 48);
             this.txtMessage.TabIndex = 1;
             // 
             // txtChatLog
@@ -144,11 +179,11 @@
             this.txtChatLog.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
             this.txtChatLog.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.txtChatLog.ForeColor = System.Drawing.Color.White;
-            this.txtChatLog.Location = new System.Drawing.Point(11, 62);
-            this.txtChatLog.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.txtChatLog.Location = new System.Drawing.Point(13, 67);
+            this.txtChatLog.Margin = new System.Windows.Forms.Padding(4);
             this.txtChatLog.Name = "txtChatLog";
             this.txtChatLog.ReadOnly = true;
-            this.txtChatLog.Size = new System.Drawing.Size(371, 300);
+            this.txtChatLog.Size = new System.Drawing.Size(372, 327);
             this.txtChatLog.TabIndex = 0;
             this.txtChatLog.Text = "";
             // 
@@ -157,9 +192,10 @@
             this.lblTurn.BackColor = System.Drawing.Color.Transparent;
             this.lblTurn.Font = new System.Drawing.Font("Segoe UI Black", 20F, System.Drawing.FontStyle.Bold);
             this.lblTurn.ForeColor = System.Drawing.Color.Yellow;
-            this.lblTurn.Location = new System.Drawing.Point(467, 38);
+            this.lblTurn.Location = new System.Drawing.Point(488, 47);
+            this.lblTurn.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblTurn.Name = "lblTurn";
-            this.lblTurn.Size = new System.Drawing.Size(507, 62);
+            this.lblTurn.Size = new System.Drawing.Size(771, 67);
             this.lblTurn.TabIndex = 3;
             this.lblTurn.Text = "Đợi người chơi...";
             this.lblTurn.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -174,10 +210,10 @@
             this.grpOpponentInfo.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
             this.grpOpponentInfo.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
             this.grpOpponentInfo.ForeColor = System.Drawing.Color.White;
-            this.grpOpponentInfo.Location = new System.Drawing.Point(1012, 125);
-            this.grpOpponentInfo.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.grpOpponentInfo.Location = new System.Drawing.Point(1291, 160);
+            this.grpOpponentInfo.Margin = new System.Windows.Forms.Padding(4);
             this.grpOpponentInfo.Name = "grpOpponentInfo";
-            this.grpOpponentInfo.Size = new System.Drawing.Size(394, 250);
+            this.grpOpponentInfo.Size = new System.Drawing.Size(400, 333);
             this.grpOpponentInfo.TabIndex = 2;
             this.grpOpponentInfo.Text = "ĐỐI THỦ";
             // 
@@ -186,7 +222,8 @@
             this.lblOpponentSymbol.AutoSize = true;
             this.lblOpponentSymbol.Font = new System.Drawing.Font("Segoe UI Black", 40F, System.Drawing.FontStyle.Bold);
             this.lblOpponentSymbol.ForeColor = System.Drawing.Color.Blue;
-            this.lblOpponentSymbol.Location = new System.Drawing.Point(135, 112);
+            this.lblOpponentSymbol.Location = new System.Drawing.Point(155, 147);
+            this.lblOpponentSymbol.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblOpponentSymbol.Name = "lblOpponentSymbol";
             this.lblOpponentSymbol.Size = new System.Drawing.Size(106, 106);
             this.lblOpponentSymbol.TabIndex = 1;
@@ -196,7 +233,8 @@
             // 
             this.lblOpponentName.AutoSize = true;
             this.lblOpponentName.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold);
-            this.lblOpponentName.Location = new System.Drawing.Point(22, 75);
+            this.lblOpponentName.Location = new System.Drawing.Point(26, 80);
+            this.lblOpponentName.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblOpponentName.Name = "lblOpponentName";
             this.lblOpponentName.Size = new System.Drawing.Size(144, 38);
             this.lblOpponentName.TabIndex = 0;
@@ -212,10 +250,10 @@
             this.grpMyInfo.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
             this.grpMyInfo.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
             this.grpMyInfo.ForeColor = System.Drawing.Color.White;
-            this.grpMyInfo.Location = new System.Drawing.Point(34, 125);
-            this.grpMyInfo.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.grpMyInfo.Location = new System.Drawing.Point(34, 160);
+            this.grpMyInfo.Margin = new System.Windows.Forms.Padding(4);
             this.grpMyInfo.Name = "grpMyInfo";
-            this.grpMyInfo.Size = new System.Drawing.Size(394, 250);
+            this.grpMyInfo.Size = new System.Drawing.Size(400, 333);
             this.grpMyInfo.TabIndex = 1;
             this.grpMyInfo.Text = "BẠN (Player)";
             // 
@@ -224,7 +262,8 @@
             this.lblMySymbol.AutoSize = true;
             this.lblMySymbol.Font = new System.Drawing.Font("Segoe UI Black", 40F, System.Drawing.FontStyle.Bold);
             this.lblMySymbol.ForeColor = System.Drawing.Color.Red;
-            this.lblMySymbol.Location = new System.Drawing.Point(135, 112);
+            this.lblMySymbol.Location = new System.Drawing.Point(155, 147);
+            this.lblMySymbol.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblMySymbol.Name = "lblMySymbol";
             this.lblMySymbol.Size = new System.Drawing.Size(101, 106);
             this.lblMySymbol.TabIndex = 1;
@@ -234,7 +273,8 @@
             // 
             this.lblMyName.AutoSize = true;
             this.lblMyName.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold);
-            this.lblMyName.Location = new System.Drawing.Point(22, 75);
+            this.lblMyName.Location = new System.Drawing.Point(26, 80);
+            this.lblMyName.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblMyName.Name = "lblMyName";
             this.lblMyName.Size = new System.Drawing.Size(148, 38);
             this.lblMyName.TabIndex = 0;
@@ -243,13 +283,11 @@
             // pnlBoard
             // 
             this.pnlBoard.BackColor = System.Drawing.Color.WhiteSmoke;
-            this.pnlBoard.Location = new System.Drawing.Point(467, 125);
-            this.pnlBoard.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.pnlBoard.Location = new System.Drawing.Point(469, 160);
+            this.pnlBoard.Margin = new System.Windows.Forms.Padding(0);
             this.pnlBoard.Name = "pnlBoard";
-            this.pnlBoard.Size = new System.Drawing.Size(507, 564);
+            this.pnlBoard.Size = new System.Drawing.Size(790, 815);
             this.pnlBoard.TabIndex = 0;
-            this.pnlBoard.Paint += new System.Windows.Forms.PaintEventHandler(this.pnlBoard_Paint);
-            this.pnlBoard.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pnlBoard_MouseClick);
             // 
             // btnMusic
             // 
@@ -257,9 +295,10 @@
             this.btnMusic.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(128)))));
             this.btnMusic.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.btnMusic.ForeColor = System.Drawing.Color.White;
-            this.btnMusic.Location = new System.Drawing.Point(30, 30);
+            this.btnMusic.Location = new System.Drawing.Point(51, 27);
+            this.btnMusic.Margin = new System.Windows.Forms.Padding(4);
             this.btnMusic.Name = "btnMusic";
-            this.btnMusic.Size = new System.Drawing.Size(81, 40);
+            this.btnMusic.Size = new System.Drawing.Size(104, 53);
             this.btnMusic.TabIndex = 20;
             this.btnMusic.Text = "Nhạc";
             this.btnMusic.Click += new System.EventHandler(this.btnMusic_Click);
@@ -274,16 +313,17 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1440, 900);
+            this.ClientSize = new System.Drawing.Size(1800, 1200);
             this.Controls.Add(this.pnlBackground);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
-            this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "GameForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "GameForm";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.GameForm_FormClosing);
             this.Load += new System.EventHandler(this.GameForm_Load);
             this.pnlBackground.ResumeLayout(false);
+            this.pnlBackground.PerformLayout();
             this.grpChat.ResumeLayout(false);
             this.grpOpponentInfo.ResumeLayout(false);
             this.grpOpponentInfo.PerformLayout();
@@ -312,5 +352,7 @@
         private Guna.UI2.WinForms.Guna2ControlBox btnExit;
         private Guna.UI2.WinForms.Guna2DragControl guna2DragControl1;
         private Guna.UI2.WinForms.Guna2Button btnMusic;
+        private Guna.UI2.WinForms.Guna2GradientButton btnPlayAgain;
+        private System.Windows.Forms.Label label1;
     }
 }

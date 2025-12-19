@@ -50,15 +50,15 @@ namespace Client
             => Send(MessageType.ROOM_LIST, new { });
 
         // GAME ==================================================
-        public void SendMove(int x, int y)
-            => Send(MessageType.GAME_MOVE, new { x, y });
+        public void SendMove(int roomId, int x, int y)
+            => Send(MessageType.GAME_MOVE, new { roomId, x, y });
 
         public void Surrender()
             => Send(MessageType.GAME_SURRENDER, new { });
 
         // CHAT ==================================================
-        public void Chat(string message)
-            => Send(MessageType.CHAT_SEND, new { message });
+        public void Chat(int roomId, string text)
+            => Send(MessageType.CHAT_SEND, new { roomId, text });
 
         // RANK ==================================================
         public void RequestRanking()

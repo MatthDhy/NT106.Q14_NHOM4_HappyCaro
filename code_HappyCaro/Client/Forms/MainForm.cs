@@ -1,10 +1,12 @@
 ﻿using Client.Forms;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Windows.Forms;
-using System.Drawing;
+using System.Linq;
 
 namespace Client.Forms
 {
@@ -13,6 +15,7 @@ namespace Client.Forms
         private readonly ClientDispatcher _dispatcher;
         private readonly ClientRequest _request;
         private readonly UserInfo _user;
+        private bool _isQuickMatch = false;
 
         // Constructor này KHỚP 100% với LoginForm hiện tại của bạn
         public MainForm(ClientDispatcher dispatcher, string username, int rank, int wins, int losses)
@@ -34,6 +37,7 @@ namespace Client.Forms
             _dispatcher.OnRankingReceived += OnRankingReceived;
             _dispatcher.OnRoomCreated += OnRoomCreated;
             _dispatcher.OnRoomJoined += OnRoomJoined;
+            _dispatcher.OnRoomUpdate += OnRoomListReceived;
         }
 
         private void MainForm_Load(object sender, EventArgs e)
@@ -102,6 +106,73 @@ namespace Client.Forms
             {
                 btnMusic.Text = "ON";
                 btnMusic.FillColor = System.Drawing.Color.FromArgb(255, 192, 128);
+            }
+        }
+
+        // ==========================================================
+        // GHÉP NGẪU NHIÊN (PLAY NOW)
+        // ==========================================================
+        private void btnPlayNow_Click(object sender, EventArgs e)
+        {
+            // Bật cờ ghép ngẫu nhiên để hàm OnRoomListReceived biết mà xử lý
+            _isQuickMatch = true;
+
+            // Gửi yêu cầu lấy danh sách phòng
+            _request.RequestRoomList();
+
+            // Hiện trạng thái chờ
+            this.Cursor = Cursors.WaitCursor;
+        }
+
+        // Hàm này sẽ được gọi khi nhận MessageType.ROOM_UPDATE từ server
+        private void OnRoomListReceived(string json)
+        {
+            // Nếu không phải đang ấn nút Play Now thì bỏ qua (để tránh tự vào phòng khi server update list)
+            if (!_isQuickMatch) return;
+
+            _isQuickMatch = false; // Reset cờ
+
+            // Chuyển về luồng UI
+            if (InvokeRequired)
+            {
+                Invoke(new Action(() => { this.Cursor = Cursors.Default; }));
+                Invoke(new Action<string>(ProcessQuickMatch), json);
+            }
+            else
+            {
+                this.Cursor = Cursors.Default;
+                ProcessQuickMatch(json);
+            }
+        }
+
+        private void ProcessQuickMatch(string json)
+        {
+            try
+            {
+                // Deserialize danh sách phòng
+                var list = JsonHelper.Deserialize<List<JsonElement>>(json);
+
+                if (list != null && list.Count > 0)
+                {
+                    // Tìm phòng đầu tiên có status = "WAITING"
+                    var waitingRoom = list.FirstOrDefault(r => GetString(r, "status") == "WAITING");
+
+                    // Nếu tìm thấy phòng
+                    if (waitingRoom.ValueKind != JsonValueKind.Undefined)
+                    {
+                        int roomId = GetInt(waitingRoom, "id");
+                        // Tự động vào phòng
+                        _request.JoinRoom(roomId);
+                        return;
+                    }
+                }
+
+                // Nếu không có phòng nào Waiting -> Tự tạo phòng mới
+                _request.CreateRoom();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi ghép phòng: " + ex.Message);
             }
         }
 
@@ -186,11 +257,6 @@ namespace Client.Forms
                 OpenGameForm(roomId, _user.Username, opponent, firstTurn);
             }
             catch (Exception ex) { MessageBox.Show("Lỗi vào phòng: " + ex.Message); }
-        }
-
-        private void btnPlayNow_Click(object sender, EventArgs e)
-        {
-            MessageBox.Show("Đang tìm đối thủ...", "Thông báo");
         }
 
         // ==========================================================

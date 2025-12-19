@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Collections.Generic;
 using System.Windows.Forms;
 using System.Text.Json;
 using Client.Forms;
@@ -8,27 +9,23 @@ namespace Client.Forms
 {
     public partial class GameForm : Form
     {
-        // --- CẤU HÌNH ---
-        private const int CONS_WIDTH = 30;
-        private const int CONS_HEIGHT = 30;
+        private const int CONS_WIDTH = 35;  // Kích thước ô cờ to
+        private const int CONS_HEIGHT = 35;
         private const int BOARD_SIZE = 15;
 
-        // --- MẠNG ---
         private readonly ClientDispatcher _dispatcher;
         private readonly ClientRequest _req;
 
-        // --- TRẠNG THÁI GAME ---
         private int _roomId;
         private string _myUsername;
         private string _opponentUsername;
         private bool _isMyTurn;
         private string _mySymbol;
-        private bool[,] _lockedBoard;
-        private Graphics _g;
+
+        private List<List<Button>> _matrix;
 
         public GameForm() { InitializeComponent(); }
 
-        // Constructor khớp với MainForm
         public GameForm(ClientDispatcher dispatcher, ClientRequest request, int roomId, string myUser, string oppUser, string firstTurnUser)
         {
             InitializeComponent();
@@ -39,10 +36,9 @@ namespace Client.Forms
             _myUsername = myUser;
             _opponentUsername = oppUser;
 
-            _isMyTurn = (_myUsername == firstTurnUser);
+            _isMyTurn = string.Equals(_myUsername, firstTurnUser, StringComparison.OrdinalIgnoreCase);
             _mySymbol = _isMyTurn ? "X" : "O";
 
-            // Setup giao diện
             lblMyName.Text = _myUsername;
             lblMySymbol.Text = _mySymbol;
             lblMySymbol.ForeColor = (_mySymbol == "X") ? Color.Red : Color.Blue;
@@ -51,10 +47,8 @@ namespace Client.Forms
             lblOpponentSymbol.Text = (_mySymbol == "X") ? "O" : "X";
             lblOpponentSymbol.ForeColor = (lblOpponentSymbol.Text == "X") ? Color.Red : Color.Blue;
 
-            _lockedBoard = new bool[BOARD_SIZE, BOARD_SIZE];
+            DrawChessBoard();
             UpdateTurnLabel();
-
-            // Đăng ký sự kiện
             RegisterEvents();
         }
 
@@ -64,8 +58,6 @@ namespace Client.Forms
             _dispatcher.OnGameEnd += OnGameEnd;
             _dispatcher.OnChatReceived += OnChatReceived;
             _dispatcher.OnRoomJoined += OnRoomJoinedGame;
-            // Nếu có sự kiện đầu hàng
-            // _dispatcher.OnOpponentSurrender += OnOpponentSurrender; 
         }
 
         private void UnregisterEvents()
@@ -76,7 +68,55 @@ namespace Client.Forms
             _dispatcher.OnRoomJoined -= OnRoomJoinedGame;
         }
 
-        // --- XỬ LÝ SỰ KIỆN TỪ SERVER ---
+        private void GameForm_Load(object sender, EventArgs e)
+        {
+            UpdateMusicButton();
+        }
+
+        // --- BÀN CỜ ---
+        private void DrawChessBoard()
+        {
+            _matrix = new List<List<Button>>();
+            pnlBoard.Controls.Clear();
+            pnlBoard.Enabled = true;
+
+            for (int i = 0; i < BOARD_SIZE; i++)
+            {
+                _matrix.Add(new List<Button>());
+                for (int j = 0; j < BOARD_SIZE; j++)
+                {
+                    Button btn = new Button()
+                    {
+                        Width = CONS_WIDTH,
+                        Height = CONS_HEIGHT,
+                        Location = new Point(j * CONS_WIDTH, i * CONS_HEIGHT),
+                        Tag = new Point(j, i),
+                        BackColor = Color.WhiteSmoke,
+                        FlatStyle = FlatStyle.Flat,
+                        Font = new Font("Arial", 16, FontStyle.Bold), // Font chữ to
+                        Margin = Padding.Empty,
+                        Padding = Padding.Empty
+                    };
+                    btn.FlatAppearance.BorderColor = Color.Silver;
+                    btn.Click += Btn_Click;
+                    pnlBoard.Controls.Add(btn);
+                    _matrix[i].Add(btn);
+                }
+            }
+        }
+
+        private void Btn_Click(object sender, EventArgs e)
+        {
+            if (!_isMyTurn) return;
+
+            Button btn = sender as Button;
+            if (btn == null || !string.IsNullOrEmpty(btn.Text)) return;
+
+            Point point = (Point)btn.Tag;
+            _req.SendMove(_roomId, point.X, point.Y);
+        }
+
+        // --- CẬP NHẬT TỪ SERVER ---
         private void OnGameUpdate(string json)
         {
             this.Invoke((MethodInvoker)delegate {
@@ -88,12 +128,23 @@ namespace Client.Forms
                     string symbol = GetString(data, "symbol");
                     string nextTurn = GetString(data, "nextTurn");
 
-                    DrawMove(x, y, symbol);
-                    _isMyTurn = (nextTurn == _myUsername);
+                    UpdateBoardUI(x, y, symbol);
+
+                    _isMyTurn = string.Equals(nextTurn, _myUsername, StringComparison.OrdinalIgnoreCase);
                     UpdateTurnLabel();
                 }
                 catch { }
             });
+        }
+
+        private void UpdateBoardUI(int x, int y, string symbol)
+        {
+            if (_matrix != null && y >= 0 && y < _matrix.Count && x >= 0 && x < _matrix[y].Count)
+            {
+                Button btn = _matrix[y][x];
+                btn.Text = symbol;
+                btn.ForeColor = (symbol == "X") ? Color.Red : Color.Blue;
+            }
         }
 
         private void OnGameEnd(string json)
@@ -108,11 +159,27 @@ namespace Client.Forms
                     string msg = (winner == _myUsername) ? "BẠN THẮNG!" : "BẠN THUA!";
                     if (reason == "DRAW_BY_FULL_BOARD" || reason == "DRAW") msg = "HÒA CỜ!";
 
-                    MessageBox.Show($"{msg}\n({reason})", "Kết thúc");
+                    MessageBox.Show($"{msg}\n({reason})", "Kết thúc ván đấu");
+
                     pnlBoard.Enabled = false;
+
+                    btnSurrender.Visible = false;
+                    btnPlayAgain.Visible = true;
                 }
                 catch { }
             });
+        }
+
+        // --- CHAT ---
+        private void btnSend_Click(object sender, EventArgs e)
+        {
+            if (!string.IsNullOrEmpty(txtMessage.Text))
+            {
+                _req.Chat(_roomId, txtMessage.Text);
+                AppendChat(_myUsername, txtMessage.Text);
+                txtMessage.Clear();
+                txtMessage.Focus();
+            }
         }
 
         private void OnChatReceived(string json)
@@ -122,89 +189,33 @@ namespace Client.Forms
                 {
                     var data = JsonHelper.Deserialize<JsonElement>(json);
                     string from = GetString(data, "from");
-                    string text = GetString(data, "message");
-                    if (string.IsNullOrEmpty(text)) text = GetString(data, "text");
+                    string text = GetString(data, "text");
+                    if (string.IsNullOrEmpty(text)) text = GetString(data, "message");
 
-                    AppendChat(from, text);
-                }
-                catch { }
-            });
-        }
-
-        private void OnRoomJoinedGame(string json)
-        {
-            this.Invoke((MethodInvoker)delegate {
-                try
-                {
-                    var data = JsonHelper.Deserialize<JsonElement>(json);
-                    string p2 = GetString(data, "player2");
-                    // Kiểm tra cả viết hoa viết thường
-                    if (string.IsNullOrEmpty(p2)) p2 = GetString(data, "Player2");
-
-                    if (!string.IsNullOrEmpty(p2) && p2 != _myUsername)
+                    if (from != _myUsername)
                     {
-                        _opponentUsername = p2;
-                        lblOpponentName.Text = p2;
-                        UpdateTurnLabel();
-                        AppendSystemLog($"Người chơi {p2} đã vào phòng.");
+                        AppendChat(from, text);
                     }
                 }
                 catch { }
             });
         }
 
-        private void GameForm_Load(object sender, EventArgs e)
+        private void AppendChat(string from, string text)
         {
-            _g = pnlBoard.CreateGraphics();
-            DrawChessBoard();
-            UpdateMusicButton();
-        }
-
-        // --- VẼ BÀN CỜ ---
-        private void pnlBoard_Paint(object sender, PaintEventArgs e) => DrawChessBoard();
-
-        private void DrawChessBoard()
-        {
-            Graphics g = pnlBoard.CreateGraphics();
-            Pen pen = new Pen(Color.Black);
-            for (int i = 0; i <= BOARD_SIZE; i++)
-            {
-                g.DrawLine(pen, 0, i * CONS_HEIGHT, BOARD_SIZE * CONS_WIDTH, i * CONS_HEIGHT);
-                g.DrawLine(pen, i * CONS_WIDTH, 0, i * CONS_WIDTH, BOARD_SIZE * CONS_HEIGHT);
-            }
-        }
-
-        private void DrawMove(int x, int y, string symbol)
-        {
-            _lockedBoard[x, y] = true;
-            int drawX = x * CONS_WIDTH;
-            int drawY = y * CONS_HEIGHT;
-            Font font = new Font("Arial", 16, FontStyle.Bold);
-            Brush brush = (symbol == "X") ? Brushes.Red : Brushes.Blue;
-            _g.DrawString(symbol, font, brush, drawX + 5, drawY + 2);
-        }
-
-        private void pnlBoard_MouseClick(object sender, MouseEventArgs e)
-        {
-            if (!_isMyTurn) return;
-
-            int x = e.X / CONS_WIDTH;
-            int y = e.Y / CONS_HEIGHT;
-
-            if (x >= 0 && x < BOARD_SIZE && y >= 0 && y < BOARD_SIZE && !_lockedBoard[x, y])
-            {
-                _req.SendMove(x, y);
-            }
+            txtChatLog.SelectionStart = txtChatLog.TextLength;
+            txtChatLog.SelectionLength = 0;
+            txtChatLog.SelectionColor = (from == _myUsername) ? Color.Cyan : Color.Yellow;
+            txtChatLog.AppendText($"{from}: ");
+            txtChatLog.SelectionColor = Color.White;
+            txtChatLog.AppendText($"{text}\n");
+            txtChatLog.ScrollToCaret();
         }
 
         // --- CÁC NÚT CHỨC NĂNG ---
-        private void btnSend_Click(object sender, EventArgs e)
+        private void btnPlayAgain_Click(object sender, EventArgs e)
         {
-            if (!string.IsNullOrEmpty(txtMessage.Text))
-            {
-                _req.Chat(txtMessage.Text);
-                txtMessage.Clear();
-            }
+            this.Close();
         }
 
         private void btnSurrender_Click(object sender, EventArgs e)
@@ -217,10 +228,8 @@ namespace Client.Forms
 
         private void btnExit_Click(object sender, EventArgs e) => this.Close();
 
-        // --- NHẠC VÀ UI ---
         private void btnMusic_Click(object sender, EventArgs e)
         {
-            // Cần có class AudioManager đã tạo ở các bước trước
             try { AudioManager.Toggle(); UpdateMusicButton(); } catch { }
         }
 
@@ -242,24 +251,31 @@ namespace Client.Forms
             catch { }
         }
 
+        private void OnRoomJoinedGame(string json)
+        {
+            this.Invoke((MethodInvoker)delegate {
+                try
+                {
+                    var data = JsonHelper.Deserialize<JsonElement>(json);
+                    string p2 = GetString(data, "player2");
+                    if (string.IsNullOrEmpty(p2)) p2 = GetString(data, "Player2");
+
+                    if (!string.IsNullOrEmpty(p2) && p2 != _myUsername)
+                    {
+                        _opponentUsername = p2;
+                        lblOpponentName.Text = p2;
+                        UpdateTurnLabel();
+                        AppendSystemLog($"Người chơi {p2} đã vào phòng.");
+                    }
+                }
+                catch { }
+            });
+        }
+
         private void GameForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             UnregisterEvents();
             _req.LeaveRoom();
-        }
-
-        // --- HELPER JSON ---
-        private string GetString(JsonElement elem, string key)
-        {
-            if (elem.TryGetProperty(key, out var val)) return val.GetString();
-            if (elem.TryGetProperty(key.ToLower(), out var val2)) return val2.GetString();
-            return "";
-        }
-        private int GetInt(JsonElement elem, string key)
-        {
-            if (elem.TryGetProperty(key, out var val)) return val.GetInt32();
-            if (elem.TryGetProperty(key.ToLower(), out var val2)) return val2.GetInt32();
-            return 0;
         }
 
         private void UpdateTurnLabel()
@@ -281,17 +297,23 @@ namespace Client.Forms
             }
         }
 
-        private void AppendChat(string from, string text)
+        private string GetString(JsonElement elem, string key)
         {
-            txtChatLog.SelectionColor = (from == _myUsername) ? Color.Cyan : Color.Yellow;
-            txtChatLog.AppendText($"{from}: ");
-            txtChatLog.SelectionColor = Color.White;
-            txtChatLog.AppendText($"{text}\n");
-            txtChatLog.ScrollToCaret();
+            if (elem.TryGetProperty(key, out var val)) return val.GetString();
+            if (elem.TryGetProperty(key.ToLower(), out var val2)) return val2.GetString();
+            return "";
+        }
+        private int GetInt(JsonElement elem, string key)
+        {
+            if (elem.TryGetProperty(key, out var val)) return val.GetInt32();
+            if (elem.TryGetProperty(key.ToLower(), out var val2)) return val2.GetInt32();
+            return 0;
         }
 
         private void AppendSystemLog(string text)
         {
+            txtChatLog.SelectionStart = txtChatLog.TextLength;
+            txtChatLog.SelectionLength = 0;
             txtChatLog.SelectionColor = Color.Gray;
             txtChatLog.AppendText($"[System]: {text}\n");
         }
