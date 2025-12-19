@@ -87,24 +87,11 @@ namespace Client.Forms
 
         private void HandleRegisterFail(string payload)
         {
-            if (InvokeRequired)
-            {
-                Invoke(new Action<string>(HandleRegisterFail), payload);
-                return;
-            }
-
+            if (InvokeRequired) { Invoke(new Action<string>(HandleRegisterFail), payload); return; }
             btnRegister.Enabled = true;
 
-            string msg = "Đăng ký thất bại.";
-
-            try
-            {
-                var err = JsonHelper.Deserialize<ErrorResponse>(payload);
-                if (err != null) msg = err.Error;
-            }
-            catch { }
-
-            MessageBox.Show(msg, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            // Hiển thị trực tiếp payload để biết Server đang gửi cái gì về
+            MessageBox.Show("Lỗi từ Server: " + payload, "Lỗi Hệ Thống", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
         private void btnEye_Click(object sender, EventArgs e)
@@ -150,7 +137,8 @@ namespace Client.Forms
 
         private class ErrorResponse
         {
-            public string Error { get; set; }
+            
+            public string Reason { get; set; }
         }
     }
 }

@@ -80,7 +80,10 @@ namespace ServerCore.ServerCore
             catch (Exception ex)
             {
                 Server.Log($"Register Error: {ex.Message}");
-                client.SendEnvelope(MessageType.AUTH_REGISTER_FAIL, JsonHelper.Serialize(new { ok = false, reason = "ServerError" }));
+                client.SendEnvelope(
+        MessageType.AUTH_REGISTER_FAIL,
+        JsonHelper.Serialize(new { ok = false, reason = ex.Message })
+    );
             }
         }
 

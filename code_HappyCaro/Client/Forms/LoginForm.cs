@@ -111,7 +111,7 @@ namespace Client.Forms
         private void lnkRegister_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             var reg = new RegisterForm(_clientRequest, _dispatcher);
-            reg.FormClosed += (s, t) => this.Show();
+            //reg.FormClosed += (s, t) => this.Show();
             this.Hide();
             reg.Show();
         }
