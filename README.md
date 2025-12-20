@@ -1,7 +1,9 @@
 # 🎮 Happy Caro – Online Gomoku Game
-# _NT106.Q14_NHOM4_
 
 ## Danh sách thành viên
+
+_NT106.Q14 - Nhóm 4_
+
 1.	24520656	Đinh Võ Gia Huy
 2.	24520514	Trần Lê Văn Hiếu
 3.	24520661	Hoàng Gia Huy
