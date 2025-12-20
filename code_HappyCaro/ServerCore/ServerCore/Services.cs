@@ -130,8 +130,25 @@ HappyCaro Team!"
                 }
             }
 
+            // ============================
+            // VERIFY OTP
+            // ============================
+            public static bool VerifyOTP(string email, string otp)
+            {
+                lock (_resetTokens)
+                {
+                    if (!_resetTokens.ContainsKey(email)) return false;
+                    var info = _resetTokens[email];
 
-
+                    // Kiểm tra mã và thời gian
+                    if (info.Token != otp || DateTime.Now > info.ExpireAt)
+                    {
+                        if (DateTime.Now > info.ExpireAt) _resetTokens.Remove(email);
+                        return false;
+                    }
+                    return true;
+                }
+            }
 
             // ============================
             // VERIFY TOKEN + RESET PASSWORD

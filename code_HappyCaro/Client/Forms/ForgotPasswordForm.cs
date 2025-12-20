@@ -24,6 +24,7 @@ namespace Client.Forms
             // Đăng ký sự kiện: Khi server báo OK thì mới mở Form Reset
             _dispatcher.OnVerifyOTPSuccess += HandleVerifyOTPSuccess;
             _dispatcher.OnVerifyOTPFail += HandleVerifyOTPFail;
+            _dispatcher.OnResetRequested += HandleResetRequested;
         }
 
         private async void btnSendOTP_Click(object sender, EventArgs e)
@@ -35,12 +36,8 @@ namespace Client.Forms
                 return;
             }
 
-            // Gửi request lên Server thông qua ClientRequest
-            // Biến 'request' thường được khởi tạo từ Form chính hoặc Login Form
+            btnSendOTP.Enabled = false;
             _request.ForgotPassword(email);
-
-            MessageBox.Show("Yêu cầu gửi mã OTP đã được gửi đi!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            btnSendOTP.Enabled = false; // Đợi server phản hồi
         }
 
         
@@ -50,37 +47,91 @@ namespace Client.Forms
             string email = txtEmail.Text.Trim();
             string otp = txtOTP.Text.Trim();
 
-            
-
             if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(otp))
             {
                 MessageBox.Show("Vui lòng nhập đầy đủ Email và mã OTP!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            _request.CheckOTPOnly(email, otp);
             btnVerify.Enabled = false;
+            _request.CheckOTPOnly(email, otp);
 
+        }
+        
+        private void HandleVerifyOTPSuccess(string payload)
+        {
+            if (InvokeRequired) { Invoke(new Action<string>(HandleVerifyOTPSuccess), payload); return; }
+
+            btnVerify.Enabled = true;
+
+            try
+            {
+                // QUAN TRỌNG: Hủy đăng ký trước khi ẩn/đóng form giống LoginForm
+                Unsubscribe();
+
+                ResetPasswordForm resetForm = new ResetPasswordForm(_request, _dispatcher, txtEmail.Text.Trim(), txtOTP.Text.Trim());
+
+                // Đảm bảo nếu người dùng quay lại từ form Reset, ta đăng ký lại sự kiện
+                resetForm.FormClosed += (s, args) => {
+                    if (!this.IsDisposed)
+                    {
+                        _dispatcher.OnVerifyOTPSuccess += HandleVerifyOTPSuccess;
+                        _dispatcher.OnVerifyOTPFail += HandleVerifyOTPFail;
+                        _dispatcher.OnResetRequested += HandleResetRequested;
+                    }
+                };
+
+                resetForm.Show();
+                this.Hide();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi khi chuyển sang form đặt lại mật khẩu: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                btnVerify.Enabled = true;
+            }
+        }
+        private void HandleVerifyOTPFail(string payload)
+        {
+            if (InvokeRequired) { Invoke(new Action<string>(HandleVerifyOTPFail), payload); return; }
+
+            btnVerify.Enabled = true;
+
+            string msg = "Mã OTP không chính xác hoặc đã hết hạn.";
+            try
+            {
+                // Parse lỗi từ JSON payload giống LoginForm
+                var err = JsonHelper.Deserialize<ErrorResponse>(payload);
+                if (err != null && !string.IsNullOrEmpty(err.Error))
+                    msg = err.Error;
+            }
+            catch { }
+
+            MessageBox.Show(msg, "Xác thực thất bại", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+        private void HandleResetRequested()
+        {
+            if (InvokeRequired) { Invoke(new Action(HandleResetRequested)); return; }
+
+            btnSendOTP.Enabled = true;
+            MessageBox.Show("Yêu cầu gửi mã OTP đã được gửi đi thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+        private void Unsubscribe()
+        {
+            _dispatcher.OnVerifyOTPSuccess -= HandleVerifyOTPSuccess;
+            _dispatcher.OnVerifyOTPFail -= HandleVerifyOTPFail;
+            _dispatcher.OnResetRequested -= HandleResetRequested;
+        }
+        private void ForgotPasswordForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Unsubscribe();
         }
         private void btnBack_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             this.Close();
         }
-        private void HandleVerifyOTPSuccess()
+        private class ErrorResponse
         {
-            if (InvokeRequired) { Invoke(new Action(HandleVerifyOTPSuccess)); return; }
-
-            // CHỈ KHI SERVER BÁO ĐÚNG, FORM MỚI ĐƯỢC MỞ
-            ResetPasswordForm resetForm = new ResetPasswordForm(_request, _dispatcher, txtEmail.Text, txtOTP.Text);
-            resetForm.Show();
-            this.Hide();
-        }
-        private void HandleVerifyOTPFail(string error)
-        {
-            if (InvokeRequired) { Invoke(new Action<string>(HandleVerifyOTPFail), error); return; }
-
-            btnVerify.Enabled = true;
-            MessageBox.Show("Mã OTP không chính xác hoặc đã hết hạn!", "Lỗi");
+            public string Error { get; set; }
         }
     }
 }

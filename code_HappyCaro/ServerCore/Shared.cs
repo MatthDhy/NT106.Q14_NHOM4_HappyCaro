@@ -108,6 +108,10 @@ namespace ServerCore.ServerCore
         public static T Deserialize<T>(string json) => JsonSerializer.Deserialize<T>(json, Options);
         public static object Deserialize(string json, Type type) => JsonSerializer.Deserialize(json, type, Options);
     }
-
+    public class OtpVerifyPayload
+    {
+        public string Email { get; set; }
+        public string Otp { get; set; }
+    }
 
 }

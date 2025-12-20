@@ -95,5 +95,41 @@ namespace ServerCore.ServerCore
             Server.Log($"User LOGOUT: {name}");
             Server.OnClientListChanged?.Invoke();
         }
+        public static async void HandleResetRequest(ClientConnection client, string payloadJson)
+        {
+            try
+            {
+                // Deserialize email từ Client gửi lên
+                var data = JsonHelper.Deserialize<AuthRequestPayload>(payloadJson);
+                if (data == null || string.IsNullOrEmpty(data.Email)) return;
+
+                // Gọi Service gửi mail (Hàm có sẵn của bạn)
+                bool success = await Services.Auth.HandleForgotPasswordAsync(data.Email);
+
+                if (success)
+                    client.SendEnvelope(MessageType.AUTH_RESET_OK, "{}");
+                else
+                    client.SendEnvelope(MessageType.AUTH_RESET_FAIL, "{}");
+            }
+            catch (Exception ex) { Console.WriteLine("Error HandleResetRequest: " + ex.Message); }
+        }
+
+        public static void HandleVerifyOTP(ClientConnection client, string payloadJson)
+        {
+            try
+            {
+                var data = JsonHelper.Deserialize<OtpVerifyPayload>(payloadJson);
+                if (data == null) return;
+
+                // Gọi hàm VerifyOTP chúng ta vừa thêm ở Bước 1
+                bool isValid = Services.Auth.VerifyOTP(data.Email, data.Otp);
+
+                if (isValid)
+                    client.SendEnvelope(MessageType.AUTH_OTP_VERIFY_OK, "{}");
+                else
+                    client.SendEnvelope(MessageType.AUTH_OTP_VERIFY_FAIL, JsonHelper.Serialize(new { error = "Mã OTP không đúng hoặc hết hạn" }));
+            }
+            catch (Exception ex) { Console.WriteLine("Error HandleVerifyOTP: " + ex.Message); }
+        }
     }
 }

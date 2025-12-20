@@ -18,6 +18,7 @@ namespace Client.Forms
         private readonly Client.ClientDispatcher _dispatcher;
         private readonly string _email;
         private readonly string _otp;
+
         public ResetPasswordForm(Client.ClientRequest request, Client.ClientDispatcher dispatcher, string email, string otp)
         {
             InitializeComponent();
@@ -26,7 +27,8 @@ namespace Client.Forms
             _email = email;
             _otp = otp;
 
-
+            txtPassword.UseSystemPasswordChar = true;
+            txtConfirmPass.UseSystemPasswordChar = true;
         }
 
         private void btnFinish_Click(object sender, EventArgs e)
@@ -57,5 +59,16 @@ namespace Client.Forms
         {
             this.Close();
         }
+
+        private void btnEye_Click(object sender, EventArgs e)
+        {
+            bool isHidden = txtPassword.UseSystemPasswordChar;
+
+            txtPassword.UseSystemPasswordChar = !isHidden;
+            txtConfirmPass.UseSystemPasswordChar = !isHidden;
+
+            btnEye.Image = isHidden ? Properties.Resources.hide : Properties.Resources.view;
+        }
+
     }
 }

@@ -18,6 +18,7 @@
         private void InitializeComponent()
         {
             this.pnlBackground = new Guna.UI2.WinForms.Guna2GradientPanel();
+            this.btnEye = new Guna.UI2.WinForms.Guna2ImageButton();
             this.btnBack = new System.Windows.Forms.LinkLabel();
             this.btnFinish = new Guna.UI2.WinForms.Guna2GradientButton();
             this.txtConfirmPass = new Guna.UI2.WinForms.Guna2TextBox();
@@ -28,6 +29,7 @@
             // 
             // pnlBackground
             // 
+            this.pnlBackground.Controls.Add(this.btnEye);
             this.pnlBackground.Controls.Add(this.btnBack);
             this.pnlBackground.Controls.Add(this.btnFinish);
             this.pnlBackground.Controls.Add(this.txtConfirmPass);
@@ -41,6 +43,23 @@
             this.pnlBackground.Name = "pnlBackground";
             this.pnlBackground.Size = new System.Drawing.Size(832, 463);
             this.pnlBackground.TabIndex = 0;
+            // 
+            // btnEye
+            // 
+            this.btnEye.BackColor = System.Drawing.Color.Transparent;
+            this.btnEye.CheckedState.ImageSize = new System.Drawing.Size(64, 64);
+            this.btnEye.HoverState.ImageSize = new System.Drawing.Size(30, 30);
+            this.btnEye.Image = global::Client.Properties.Resources.view;
+            this.btnEye.ImageOffset = new System.Drawing.Point(0, 0);
+            this.btnEye.ImageRotate = 0F;
+            this.btnEye.ImageSize = new System.Drawing.Size(30, 30);
+            this.btnEye.Location = new System.Drawing.Point(596, 159);
+            this.btnEye.Name = "btnEye";
+            this.btnEye.PressedState.Image = global::Client.Properties.Resources.hide;
+            this.btnEye.PressedState.ImageSize = new System.Drawing.Size(30, 30);
+            this.btnEye.Size = new System.Drawing.Size(55, 40);
+            this.btnEye.TabIndex = 24;
+            this.btnEye.Click += new System.EventHandler(this.btnEye_Click);
             // 
             // btnBack
             // 
@@ -82,9 +101,8 @@
             this.txtConfirmPass.Font = new System.Drawing.Font("Segoe UI", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtConfirmPass.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(200)))));
             this.txtConfirmPass.Location = new System.Drawing.Point(250, 234);
-            this.txtConfirmPass.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtConfirmPass.Margin = new System.Windows.Forms.Padding(4);
             this.txtConfirmPass.Name = "txtConfirmPass";
-            this.txtConfirmPass.PasswordChar = '●';
             this.txtConfirmPass.PlaceholderText = "Xác nhận mật khẩu mới";
             this.txtConfirmPass.SelectedText = "";
             this.txtConfirmPass.Size = new System.Drawing.Size(329, 45);
@@ -100,9 +118,8 @@
             this.txtPassword.Font = new System.Drawing.Font("Segoe UI", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtPassword.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(200)))));
             this.txtPassword.Location = new System.Drawing.Point(250, 154);
-            this.txtPassword.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtPassword.Margin = new System.Windows.Forms.Padding(4);
             this.txtPassword.Name = "txtPassword";
-            this.txtPassword.PasswordChar = '●';
             this.txtPassword.PlaceholderText = "Nhập mật khẩu mới";
             this.txtPassword.SelectedText = "";
             this.txtPassword.Size = new System.Drawing.Size(329, 45);
@@ -146,5 +163,6 @@
         private Guna.UI2.WinForms.Guna2TextBox txtConfirmPass;
         private Guna.UI2.WinForms.Guna2GradientButton btnFinish;
         private System.Windows.Forms.LinkLabel btnBack;
+        private Guna.UI2.WinForms.Guna2ImageButton btnEye;
     }
 }

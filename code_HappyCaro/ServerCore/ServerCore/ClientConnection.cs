@@ -164,6 +164,38 @@ namespace ServerCore.ServerCore
                             SendEnvelope(ok ? MessageType.AUTH_RESET_VERIFY_OK : MessageType.AUTH_RESET_VERIFY_FAIL, JsonHelper.Serialize(new { ok }));
                         }
                         break;
+                    case MessageType.AUTH_OTP_VERIFY:
+                        {
+                            try
+                            {
+                                var p = JsonHelper.Deserialize<OtpVerifyPayload>(env.Payload);
+                                if (p == null)
+                                {
+                                    SendError("Dữ liệu OTP không hợp lệ");
+                                    break;
+                                }
+
+                                // Gọi hàm xử lý logic từ Services mà chúng ta đã thống nhất
+                                bool ok = Services.Auth.VerifyOTP(p.Email, p.Otp);
+
+                                if (ok)
+                                {
+                                    Server.Log($"OTP Verified SUCCESS for: {p.Email}");
+                                    SendEnvelope(MessageType.AUTH_OTP_VERIFY_OK, "{}");
+                                }
+                                else
+                                {
+                                    Server.Log($"OTP Verified FAILED for: {p.Email}");
+                                    SendEnvelope(MessageType.AUTH_OTP_VERIFY_FAIL, JsonHelper.Serialize(new { error = "Mã OTP không chính xác hoặc đã hết hạn" }));
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Server.Log($"OTP Verify Error: {ex.Message}");
+                                SendEnvelope(MessageType.AUTH_OTP_VERIFY_FAIL, JsonHelper.Serialize(new { error = "Lỗi hệ thống" }));
+                            }
+                            break;
+                        }
                     case MessageType.ROOM_CREATE:
                         GameCore.RoomManager.CreateRoom(this);
                         break;

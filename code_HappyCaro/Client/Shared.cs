@@ -89,4 +89,9 @@ namespace Client
         LanWithFallback,
         Internet // Manual IP / domain
     }
+    public class OtpVerifyPayload
+    {
+        public string Email { get; set; }
+        public string Otp { get; set; }
+    }
 }

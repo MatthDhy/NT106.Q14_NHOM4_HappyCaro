@@ -35,6 +35,8 @@ namespace Client
                 case MessageType.AUTH_REGISTER_FAIL:
                     OnRegisterFail?.Invoke(env.Payload);
                     break;
+                
+
 
                 case MessageType.AUTH_RESET_OK:
                     OnResetRequested?.Invoke();
@@ -47,8 +49,9 @@ namespace Client
                 case MessageType.AUTH_RESET_VERIFY_FAIL:
                     OnResetFail?.Invoke();
                     break;
+                
                 case MessageType.AUTH_OTP_VERIFY_OK:
-                    OnVerifyOTPSuccess?.Invoke();
+                    OnVerifyOTPSuccess?.Invoke(env.Payload);
                     break;
 
                 case MessageType.AUTH_OTP_VERIFY_FAIL:
@@ -104,6 +107,10 @@ namespace Client
                 case MessageType.ERROR:
                     OnError?.Invoke(env.Payload);
                     break;
+                    default:
+            // Nếu server trả về một Type lạ hoặc Type lỗi mà bạn chưa handle
+            Console.WriteLine($"[DEBUG] Nhận tin nhắn chưa xác định: {env.Type} - Payload: {env.Payload}");
+            break;
             }
         }
 
@@ -117,7 +124,7 @@ namespace Client
         public event Action OnResetFail;
 
         // OTP EVENTS
-        public event Action OnVerifyOTPSuccess;
+        public event Action<string> OnVerifyOTPSuccess; 
         public event Action<string> OnVerifyOTPFail;
 
 
