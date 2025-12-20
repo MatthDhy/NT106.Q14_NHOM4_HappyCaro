@@ -22,7 +22,6 @@
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             this.pnlBackground = new Guna.UI2.WinForms.Guna2GradientPanel();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.btnPlayNow = new Guna.UI2.WinForms.Guna2GradientButton();
             this.btnFindRoom = new Guna.UI2.WinForms.Guna2GradientButton();
             this.btnCreateRoom = new Guna.UI2.WinForms.Guna2GradientButton();
@@ -41,19 +40,22 @@
             this.btnMinimize = new Guna.UI2.WinForms.Guna2ControlBox();
             this.btnExit = new Guna.UI2.WinForms.Guna2ControlBox();
             this.btnMusic = new Guna.UI2.WinForms.Guna2Button();
+            this.btnLogout = new Guna.UI2.WinForms.Guna2Button();
             this.guna2Elipse1 = new Guna.UI2.WinForms.Guna2Elipse(this.components);
             this.guna2DragControl1 = new Guna.UI2.WinForms.Guna2DragControl(this.components);
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.pnlBackground.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.grpRanking.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvRanking)).BeginInit();
             this.grpFriends.SuspendLayout();
             this.grpUserInfo.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pBoxAvatar)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // pnlBackground
             // 
+            this.pnlBackground.BackColor = System.Drawing.Color.Transparent;
             this.pnlBackground.Controls.Add(this.pictureBox1);
             this.pnlBackground.Controls.Add(this.btnPlayNow);
             this.pnlBackground.Controls.Add(this.btnFindRoom);
@@ -64,9 +66,10 @@
             this.pnlBackground.Controls.Add(this.btnMinimize);
             this.pnlBackground.Controls.Add(this.btnExit);
             this.pnlBackground.Controls.Add(this.btnMusic);
+            this.pnlBackground.Controls.Add(this.btnLogout);
             this.pnlBackground.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pnlBackground.FillColor = System.Drawing.Color.DarkViolet;
-            this.pnlBackground.FillColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(0)))), ((int)(((byte)(64)))));
+            this.pnlBackground.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(165)))), ((int)(((byte)(50)))), ((int)(((byte)(255)))));
+            this.pnlBackground.FillColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(100)))), ((int)(((byte)(255)))));
             this.pnlBackground.GradientMode = System.Drawing.Drawing2D.LinearGradientMode.ForwardDiagonal;
             this.pnlBackground.Location = new System.Drawing.Point(0, 0);
             this.pnlBackground.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
@@ -74,33 +77,17 @@
             this.pnlBackground.Size = new System.Drawing.Size(1440, 900);
             this.pnlBackground.TabIndex = 0;
             // 
-            // pictureBox1
-            // 
-            this.pictureBox1.BackColor = System.Drawing.Color.Transparent;
-            this.pictureBox1.Image = global::Client.Properties.Resources.LogoHC;
-            this.pictureBox1.Location = new System.Drawing.Point(500, 55);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(385, 197);
-            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.pictureBox1.TabIndex = 21;
-            this.pictureBox1.TabStop = false;
-            // 
             // btnPlayNow
             // 
             this.btnPlayNow.Animated = true;
             this.btnPlayNow.AutoRoundedCorners = true;
             this.btnPlayNow.BackColor = System.Drawing.Color.Transparent;
             this.btnPlayNow.BorderRadius = 52;
-            this.btnPlayNow.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
-            this.btnPlayNow.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
-            this.btnPlayNow.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
-            this.btnPlayNow.DisabledState.FillColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
-            this.btnPlayNow.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
             this.btnPlayNow.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(192)))), ((int)(((byte)(0)))));
             this.btnPlayNow.FillColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(180)))), ((int)(((byte)(0)))));
             this.btnPlayNow.Font = new System.Drawing.Font("Segoe UI", 15F, System.Drawing.FontStyle.Bold);
             this.btnPlayNow.ForeColor = System.Drawing.Color.White;
-            this.btnPlayNow.Location = new System.Drawing.Point(477, 586);
+            this.btnPlayNow.Location = new System.Drawing.Point(471, 597);
             this.btnPlayNow.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btnPlayNow.Name = "btnPlayNow";
             this.btnPlayNow.Size = new System.Drawing.Size(450, 106);
@@ -114,16 +101,11 @@
             this.btnFindRoom.AutoRoundedCorners = true;
             this.btnFindRoom.BackColor = System.Drawing.Color.Transparent;
             this.btnFindRoom.BorderRadius = 36;
-            this.btnFindRoom.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
-            this.btnFindRoom.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
-            this.btnFindRoom.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
-            this.btnFindRoom.DisabledState.FillColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
-            this.btnFindRoom.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
             this.btnFindRoom.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
             this.btnFindRoom.FillColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(77)))), ((int)(((byte)(77)))));
             this.btnFindRoom.Font = new System.Drawing.Font("Segoe UI", 15F, System.Drawing.FontStyle.Bold);
             this.btnFindRoom.ForeColor = System.Drawing.Color.White;
-            this.btnFindRoom.Location = new System.Drawing.Point(477, 461);
+            this.btnFindRoom.Location = new System.Drawing.Point(471, 472);
             this.btnFindRoom.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btnFindRoom.Name = "btnFindRoom";
             this.btnFindRoom.Size = new System.Drawing.Size(450, 75);
@@ -137,16 +119,11 @@
             this.btnCreateRoom.AutoRoundedCorners = true;
             this.btnCreateRoom.BackColor = System.Drawing.Color.Transparent;
             this.btnCreateRoom.BorderRadius = 36;
-            this.btnCreateRoom.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
-            this.btnCreateRoom.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
-            this.btnCreateRoom.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
-            this.btnCreateRoom.DisabledState.FillColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
-            this.btnCreateRoom.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
             this.btnCreateRoom.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(192)))), ((int)(((byte)(192)))));
             this.btnCreateRoom.FillColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(200)))), ((int)(((byte)(255)))));
             this.btnCreateRoom.Font = new System.Drawing.Font("Segoe UI", 15F, System.Drawing.FontStyle.Bold);
             this.btnCreateRoom.ForeColor = System.Drawing.Color.White;
-            this.btnCreateRoom.Location = new System.Drawing.Point(477, 336);
+            this.btnCreateRoom.Location = new System.Drawing.Point(471, 347);
             this.btnCreateRoom.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btnCreateRoom.Name = "btnCreateRoom";
             this.btnCreateRoom.Size = new System.Drawing.Size(450, 75);
@@ -384,10 +361,24 @@
             this.btnMusic.Location = new System.Drawing.Point(34, 38);
             this.btnMusic.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btnMusic.Name = "btnMusic";
-            this.btnMusic.Size = new System.Drawing.Size(91, 51);
+            this.btnMusic.Size = new System.Drawing.Size(78, 50);
             this.btnMusic.TabIndex = 20;
             this.btnMusic.Text = "Nhạc: ON";
             this.btnMusic.Click += new System.EventHandler(this.btnMusic_Click);
+            // 
+            // btnLogout
+            // 
+            this.btnLogout.BorderRadius = 15;
+            this.btnLogout.FillColor = System.Drawing.Color.IndianRed;
+            this.btnLogout.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnLogout.ForeColor = System.Drawing.Color.White;
+            this.btnLogout.Location = new System.Drawing.Point(1252, 62);
+            this.btnLogout.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.btnLogout.Name = "btnLogout";
+            this.btnLogout.Size = new System.Drawing.Size(137, 50);
+            this.btnLogout.TabIndex = 21;
+            this.btnLogout.Text = "Đăng xuất";
+            this.btnLogout.Click += new System.EventHandler(this.btnLogout_Click);
             // 
             // guna2Elipse1
             // 
@@ -398,6 +389,16 @@
             this.guna2DragControl1.DockIndicatorTransparencyValue = 0.6D;
             this.guna2DragControl1.TargetControl = this.pnlBackground;
             this.guna2DragControl1.UseTransparentDrag = true;
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Image = global::Client.Properties.Resources.LogoHC;
+            this.pictureBox1.Location = new System.Drawing.Point(523, 62);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(353, 191);
+            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.pictureBox1.TabIndex = 22;
+            this.pictureBox1.TabStop = false;
             // 
             // MainForm
             // 
@@ -413,19 +414,20 @@
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.pnlBackground.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.grpRanking.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dgvRanking)).EndInit();
             this.grpFriends.ResumeLayout(false);
             this.grpUserInfo.ResumeLayout(false);
             this.grpUserInfo.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pBoxAvatar)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
 
         }
 
         #endregion
 
+        // ... Các khai báo cũ ...
         private Guna.UI2.WinForms.Guna2GradientPanel pnlBackground;
         private Guna.UI2.WinForms.Guna2ControlBox btnExit;
         private Guna.UI2.WinForms.Guna2ControlBox btnMinimize;
@@ -447,6 +449,7 @@
         private Guna.UI2.WinForms.Guna2Elipse guna2Elipse1;
         private Guna.UI2.WinForms.Guna2DragControl guna2DragControl1;
         private Guna.UI2.WinForms.Guna2Button btnMusic;
+        private Guna.UI2.WinForms.Guna2Button btnLogout; // Khai báo nút Logout
         private System.Windows.Forms.PictureBox pictureBox1;
     }
 }

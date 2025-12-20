@@ -16,6 +16,7 @@ namespace Client.Forms
         private readonly ClientRequest _request;
         private readonly UserInfo _user;
         private bool _isQuickMatch = false;
+        private bool _isLogout = false;
 
         // Constructor này KHỚP 100% với LoginForm hiện tại của bạn
         public MainForm(ClientDispatcher dispatcher, string username, int rank, int wins, int losses)
@@ -91,6 +92,21 @@ namespace Client.Forms
                 UpdateMusicButton();   // Cập nhật màu nút
             }
             catch { }
+        }
+
+        private void btnLogout_Click(object sender, EventArgs e)
+        {
+            if (MessageBox.Show("Bạn có chắc muốn đăng xuất?", "Xác nhận", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            {
+                // Đánh dấu là đang logout để không tắt luôn App
+                _isLogout = true;
+
+                // Gửi lệnh logout lên server (để server xóa session nếu cần)
+                try { _request.Logout(); } catch { }
+
+                // Đóng MainForm
+                this.Close();
+            }
         }
 
         private void UpdateMusicButton()
@@ -279,11 +295,23 @@ namespace Client.Forms
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            // Hủy đăng ký sự kiện để tránh lỗi bộ nhớ
             _dispatcher.OnRankingReceived -= OnRankingReceived;
             _dispatcher.OnRoomCreated -= OnRoomCreated;
             _dispatcher.OnRoomJoined -= OnRoomJoined;
-            Application.Exit();
+            _dispatcher.OnRoomUpdate -= OnRoomListReceived;
+
+            if (_isLogout)
+            {
+                // SỬA LỖI TẠI ĐÂY:
+                // Truyền _request và _dispatcher vào khi tạo mới LoginForm
+                LoginForm login = new LoginForm(_request, _dispatcher);
+                login.Show();
+            }
+            else
+            {
+                // Nếu đóng form bình thường (bấm X) thì thoát toàn bộ chương trình
+                Application.Exit();
+            }
         }
 
         // --- HÀM HỖ TRỢ ĐỌC JSON AN TOÀN ---
