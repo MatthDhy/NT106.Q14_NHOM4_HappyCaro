@@ -100,12 +100,12 @@
             this.btnSurrender.FillColor2 = System.Drawing.Color.Red;
             this.btnSurrender.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
             this.btnSurrender.ForeColor = System.Drawing.Color.White;
-            this.btnSurrender.Location = new System.Drawing.Point(157, 703);
+            this.btnSurrender.Location = new System.Drawing.Point(97, 682);
             this.btnSurrender.Margin = new System.Windows.Forms.Padding(4);
             this.btnSurrender.Name = "btnSurrender";
             this.btnSurrender.Size = new System.Drawing.Size(231, 61);
             this.btnSurrender.TabIndex = 5;
-            this.btnSurrender.Text = "XIN THUA";
+            this.btnSurrender.Text = "ĐẦU HÀNG";
             this.btnSurrender.Click += new System.EventHandler(this.btnSurrender_Click);
             // 
             // btnPlayAgain
@@ -118,7 +118,7 @@
             this.btnPlayAgain.FillColor2 = System.Drawing.Color.Green;
             this.btnPlayAgain.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
             this.btnPlayAgain.ForeColor = System.Drawing.Color.White;
-            this.btnPlayAgain.Location = new System.Drawing.Point(157, 703);
+            this.btnPlayAgain.Location = new System.Drawing.Point(97, 682);
             this.btnPlayAgain.Margin = new System.Windows.Forms.Padding(4);
             this.btnPlayAgain.Name = "btnPlayAgain";
             this.btnPlayAgain.Size = new System.Drawing.Size(231, 61);
