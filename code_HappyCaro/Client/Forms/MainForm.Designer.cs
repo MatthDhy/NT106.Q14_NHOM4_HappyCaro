@@ -22,6 +22,7 @@
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             this.pnlBackground = new Guna.UI2.WinForms.Guna2GradientPanel();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.btnPlayNow = new Guna.UI2.WinForms.Guna2GradientButton();
             this.btnFindRoom = new Guna.UI2.WinForms.Guna2GradientButton();
             this.btnCreateRoom = new Guna.UI2.WinForms.Guna2GradientButton();
@@ -43,14 +44,15 @@
             this.btnLogout = new Guna.UI2.WinForms.Guna2Button();
             this.guna2Elipse1 = new Guna.UI2.WinForms.Guna2Elipse(this.components);
             this.guna2DragControl1 = new Guna.UI2.WinForms.Guna2DragControl(this.components);
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.btnAddFriend = new Guna.UI2.WinForms.Guna2Button();
+            this.grpFriends.SuspendLayout();
             this.pnlBackground.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.grpRanking.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvRanking)).BeginInit();
             this.grpFriends.SuspendLayout();
             this.grpUserInfo.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pBoxAvatar)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // pnlBackground
@@ -76,6 +78,16 @@
             this.pnlBackground.Name = "pnlBackground";
             this.pnlBackground.Size = new System.Drawing.Size(1440, 900);
             this.pnlBackground.TabIndex = 0;
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Image = global::Client.Properties.Resources.LogoHC;
+            this.pictureBox1.Location = new System.Drawing.Point(523, 62);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(353, 191);
+            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.pictureBox1.TabIndex = 22;
+            this.pictureBox1.TabStop = false;
             // 
             // btnPlayNow
             // 
@@ -249,6 +261,8 @@
             this.grpFriends.Size = new System.Drawing.Size(338, 400);
             this.grpFriends.TabIndex = 4;
             this.grpFriends.Text = "Danh sách bạn bè";
+            this.grpFriends.Controls.Add(this.listFriends);
+            this.grpFriends.Controls.Add(this.btnAddFriend);
             // 
             // listFriends
             // 
@@ -261,8 +275,21 @@
             this.listFriends.Location = new System.Drawing.Point(17, 75);
             this.listFriends.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.listFriends.Name = "listFriends";
-            this.listFriends.Size = new System.Drawing.Size(304, 252);
+            this.listFriends.Size = new System.Drawing.Size(304, 200);
             this.listFriends.TabIndex = 0;
+            // 
+            // btnAddFriend (Thiết kế nút)
+            // 
+            this.btnAddFriend.BorderRadius = 10;
+            this.btnAddFriend.FillColor = System.Drawing.Color.Teal;
+            this.btnAddFriend.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnAddFriend.ForeColor = System.Drawing.Color.White;
+            this.btnAddFriend.Location = new System.Drawing.Point(17, 290); // Nằm dưới listFriends
+            this.btnAddFriend.Name = "btnAddFriend";
+            this.btnAddFriend.Size = new System.Drawing.Size(304, 40);
+            this.btnAddFriend.TabIndex = 1;
+            this.btnAddFriend.Text = "Thêm bạn (+)";
+            this.btnAddFriend.Click += new System.EventHandler(this.btnAddFriend_Click);
             // 
             // grpUserInfo
             // 
@@ -361,7 +388,7 @@
             this.btnMusic.Location = new System.Drawing.Point(34, 38);
             this.btnMusic.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btnMusic.Name = "btnMusic";
-            this.btnMusic.Size = new System.Drawing.Size(78, 50);
+            this.btnMusic.Size = new System.Drawing.Size(89, 41);
             this.btnMusic.TabIndex = 20;
             this.btnMusic.Text = "Nhạc: ON";
             this.btnMusic.Click += new System.EventHandler(this.btnMusic_Click);
@@ -390,16 +417,6 @@
             this.guna2DragControl1.TargetControl = this.pnlBackground;
             this.guna2DragControl1.UseTransparentDrag = true;
             // 
-            // pictureBox1
-            // 
-            this.pictureBox1.Image = global::Client.Properties.Resources.LogoHC;
-            this.pictureBox1.Location = new System.Drawing.Point(523, 62);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(353, 191);
-            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.pictureBox1.TabIndex = 22;
-            this.pictureBox1.TabStop = false;
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
@@ -414,13 +431,13 @@
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.pnlBackground.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.grpRanking.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dgvRanking)).EndInit();
             this.grpFriends.ResumeLayout(false);
             this.grpUserInfo.ResumeLayout(false);
             this.grpUserInfo.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pBoxAvatar)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -449,7 +466,8 @@
         private Guna.UI2.WinForms.Guna2Elipse guna2Elipse1;
         private Guna.UI2.WinForms.Guna2DragControl guna2DragControl1;
         private Guna.UI2.WinForms.Guna2Button btnMusic;
-        private Guna.UI2.WinForms.Guna2Button btnLogout; // Khai báo nút Logout
+        private Guna.UI2.WinForms.Guna2Button btnLogout;
+        private Guna.UI2.WinForms.Guna2Button btnAddFriend;
         private System.Windows.Forms.PictureBox pictureBox1;
     }
 }

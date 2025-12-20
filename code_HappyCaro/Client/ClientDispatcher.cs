@@ -98,6 +98,22 @@ namespace Client
                     OnChatReceived?.Invoke(env.Payload);
                     break;
 
+                case MessageType.FRIEND_ADD_OK:
+                    OnAddFriendResult?.Invoke(true, "Kết bạn thành công!");
+                    break;
+
+                case MessageType.FRIEND_ADD_FAIL:
+                    // Server trả về payload dạng { "message": "User not found" }
+                    string reason = "Lỗi kết bạn";
+                    try
+                    {
+                        var data = JsonHelper.Deserialize<System.Text.Json.JsonElement>(env.Payload);
+                        if (data.TryGetProperty("message", out var msg)) reason = msg.GetString();
+                    }
+                    catch { }
+                    OnAddFriendResult?.Invoke(false, reason);
+                    break;
+
                 // RANK ##################################################
                 case MessageType.RANKING_DATA:
                     OnRankingReceived?.Invoke(env.Payload);
@@ -142,6 +158,7 @@ namespace Client
 
         // CHAT
         public event Action<string> OnChatReceived;
+        public event Action<bool, string> OnAddFriendResult;
 
         // RANKING
         public event Action<string> OnRankingReceived;

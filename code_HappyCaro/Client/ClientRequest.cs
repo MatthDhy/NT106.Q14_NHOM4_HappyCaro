@@ -64,6 +64,14 @@ namespace Client
         public void Chat(int roomId, string text)
             => Send(MessageType.CHAT_SEND, new { roomId, text });
 
+        // Gửi yêu cầu kết bạn với username
+        public void AddFriend(string friendName)
+            => Send(MessageType.FRIEND_ADD, new { friendName });
+
+        // Yêu cầu lấy danh sách bạn bè (nếu cần gọi thủ công)
+        public void RequestFriendList()
+            => Send(MessageType.FRIEND_LIST, new { });
+
         // RANK ==================================================
         public void RequestRanking()
             => Send(MessageType.REQUEST_RANKING, new { });

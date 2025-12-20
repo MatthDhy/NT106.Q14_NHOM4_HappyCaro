@@ -39,6 +39,7 @@ namespace Client.Forms
             _dispatcher.OnRoomCreated += OnRoomCreated;
             _dispatcher.OnRoomJoined += OnRoomJoined;
             _dispatcher.OnRoomUpdate += OnRoomListReceived;
+            _dispatcher.OnAddFriendResult += OnAddFriendResult;
         }
 
         private void MainForm_Load(object sender, EventArgs e)
@@ -293,25 +294,84 @@ namespace Client.Forms
             this.Hide();
         }
 
+        private void btnAddFriend_Click(object sender, EventArgs e)
+        {
+            // Hiện hộp thoại nhập tên đơn giản
+            string friendName = ShowInputDialog("Nhập tên người muốn kết bạn:", "Thêm bạn");
+
+            if (!string.IsNullOrWhiteSpace(friendName))
+            {
+                // Không cho phép tự kết bạn với chính mình
+                if (friendName.Trim() == _user.Username)
+                {
+                    MessageBox.Show("Không thể kết bạn với chính mình!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                _request.AddFriend(friendName.Trim());
+            }
+        }
+
+        private void OnAddFriendResult(bool success, string message)
+        {
+            if (InvokeRequired) { Invoke(new Action<bool, string>(OnAddFriendResult), success, message); return; }
+
+            if (success)
+            {
+                MessageBox.Show(message, "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                MessageBox.Show(message, "Thất bại", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             _dispatcher.OnRankingReceived -= OnRankingReceived;
             _dispatcher.OnRoomCreated -= OnRoomCreated;
             _dispatcher.OnRoomJoined -= OnRoomJoined;
             _dispatcher.OnRoomUpdate -= OnRoomListReceived;
+            _dispatcher.OnAddFriendResult -= OnAddFriendResult;
 
             if (_isLogout)
             {
-                // SỬA LỖI TẠI ĐÂY:
-                // Truyền _request và _dispatcher vào khi tạo mới LoginForm
                 LoginForm login = new LoginForm(_request, _dispatcher);
                 login.Show();
             }
             else
             {
-                // Nếu đóng form bình thường (bấm X) thì thoát toàn bộ chương trình
                 Application.Exit();
             }
+        }
+
+        private string ShowInputDialog(string text, string caption)
+        {
+            Form prompt = new Form()
+            {
+                Width = 400,
+                Height = 200,
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                Text = caption,
+                StartPosition = FormStartPosition.CenterScreen,
+                MaximizeBox = false,
+                MinimizeBox = false
+            };
+
+            Label textLabel = new Label() { Left = 30, Top = 20, Text = text, AutoSize = true, Font = new Font("Segoe UI", 10) };
+            TextBox textBox = new TextBox() { Left = 30, Top = 50, Width = 320, Font = new Font("Segoe UI", 10) };
+            Button confirmation = new Button() { Text = "Ok", Left = 250, Width = 100, Top = 100, DialogResult = DialogResult.OK, Height = 35 };
+
+            confirmation.BackColor = Color.Teal;
+            confirmation.ForeColor = Color.White;
+            confirmation.FlatStyle = FlatStyle.Flat;
+
+            prompt.Controls.Add(textBox);
+            prompt.Controls.Add(confirmation);
+            prompt.Controls.Add(textLabel);
+            prompt.AcceptButton = confirmation;
+
+            return prompt.ShowDialog() == DialogResult.OK ? textBox.Text : "";
         }
 
         // --- HÀM HỖ TRỢ ĐỌC JSON AN TOÀN ---

@@ -44,6 +44,10 @@ namespace Client
         CHAT_RECV,
         PING,
         PONG,
+        FRIEND_ADD,         
+        FRIEND_ADD_OK,     
+        FRIEND_ADD_FAIL,   
+        FRIEND_LIST,
         ERROR
     }
 
