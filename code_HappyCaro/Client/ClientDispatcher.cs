@@ -47,6 +47,14 @@ namespace Client
                 case MessageType.AUTH_RESET_VERIFY_FAIL:
                     OnResetFail?.Invoke();
                     break;
+                case MessageType.AUTH_OTP_VERIFY_OK:
+                    OnVerifyOTPSuccess?.Invoke();
+                    break;
+
+                case MessageType.AUTH_OTP_VERIFY_FAIL:
+                    OnVerifyOTPFail?.Invoke(env.Payload);
+                    break;
+
 
                 // ROOM ###################################################
                 case MessageType.ROOM_LIST:
@@ -107,6 +115,11 @@ namespace Client
         public event Action OnResetRequested;
         public event Action OnResetSuccess;
         public event Action OnResetFail;
+
+        // OTP EVENTS
+        public event Action OnVerifyOTPSuccess;
+        public event Action<string> OnVerifyOTPFail;
+
 
         // ROOM EVENTS
         public event Action<string> OnRoomList;

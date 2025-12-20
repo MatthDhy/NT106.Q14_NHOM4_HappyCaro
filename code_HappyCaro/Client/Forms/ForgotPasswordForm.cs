@@ -7,13 +7,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Org.BouncyCastle.Asn1.Ocsp;
+
 namespace Client.Forms
 {
     public partial class ForgotPasswordForm: Form
     {
         private readonly Client.ClientRequest _request;
         private readonly Client.ClientDispatcher _dispatcher;
+
         public ForgotPasswordForm(Client.ClientRequest request, Client.ClientDispatcher dispatcher)
         {
             InitializeComponent();

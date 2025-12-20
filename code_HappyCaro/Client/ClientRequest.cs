@@ -33,6 +33,10 @@ namespace Client
             => Send(MessageType.AUTH_RESET_VERIFY,
                 new { email, token, newPassword });
 
+        // AUTH - VERIFY OTP ONLY
+        public void CheckOTPOnly(string email, string otp)
+            => Send(MessageType.AUTH_OTP_VERIFY, new { email, otp });
+
         public void Logout()
             => Send(MessageType.AUTH_LOGOUT, new { });
 
