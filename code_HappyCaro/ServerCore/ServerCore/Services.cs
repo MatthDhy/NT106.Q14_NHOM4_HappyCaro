@@ -1,12 +1,13 @@
-﻿using System;
+﻿using MailKit.Net.Smtp;
+using MimeKit;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
-using MailKit.Net.Smtp;
-using MimeKit;
 
 
 namespace ServerCore.ServerCore
@@ -593,7 +594,7 @@ HappyCaro Team!"
             // =========================================
             // GET USER ID
             // =========================================
-            private static int GetUserId(string username)
+            public static int GetUserId(string username)
             {
                 if (string.IsNullOrEmpty(username))
                     return 0;
@@ -624,6 +625,429 @@ HappyCaro Team!"
                     if (conn != null) conn.Dispose();
                 }
             }
+            public static bool IsFriend(int u1, int u2)
+            {
+                SqlConnection conn = null;
+
+                try
+                {
+                    conn = GetConnection();
+                    conn.Open();
+
+                    string q = @"
+            SELECT COUNT(*) FROM Friends
+            WHERE (
+                (UserId = @a AND FriendId = @b)
+             OR (UserId = @b AND FriendId = @a)
+            )
+            AND Status = 'ACCEPTED'";
+
+                    SqlCommand cmd = new SqlCommand(q, conn);
+                    cmd.Parameters.AddWithValue("@a", u1);
+                    cmd.Parameters.AddWithValue("@b", u2);
+
+                    return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("DB:IsFriend " + ex.Message);
+                    return false;
+                }
+                finally
+                {
+                    if (conn != null) conn.Dispose();
+                }
+            }
+
+            public static bool AddFriendRequest(int fromId, int toId, out string msg)
+            {
+                msg = "";
+
+                using (SqlConnection conn = GetConnection())
+                {
+                    conn.Open();
+
+                    // Không cho gửi trùng
+                    string check = @"SELECT COUNT(*) FROM Friends
+                         WHERE (UserId=@a AND FriendId=@b)
+                            OR (UserId=@b AND FriendId=@a)";
+                    SqlCommand c1 = new SqlCommand(check, conn);
+                    c1.Parameters.AddWithValue("@a", fromId);
+                    c1.Parameters.AddWithValue("@b", toId);
+
+                    if ((int)c1.ExecuteScalar() > 0)
+                    {
+                        msg = "Hai bạn đã có quan hệ bạn bè hoặc đang chờ xác nhận";
+                        return false;
+                    }
+
+                    string insert = @"INSERT INTO Friends(UserId, FriendId, Status)
+                          VALUES(@u, @f, 'PENDING')";
+                    SqlCommand c2 = new SqlCommand(insert, conn);
+                    c2.Parameters.AddWithValue("@u", fromId);
+                    c2.Parameters.AddWithValue("@f", toId);
+                    c2.ExecuteNonQuery();
+
+                    msg = "Đã gửi lời mời kết bạn";
+                    return true;
+                }
+            }
+
+
+            public static bool AddFriend(int userId, int friendId)
+            {
+                SqlConnection conn = null;
+
+                try
+                {
+                    conn = GetConnection();
+                    conn.Open();
+
+                    // 1️⃣ Check đã tồn tại request hoặc friendship
+                    string check = @"
+            SELECT COUNT(*) FROM Friends
+            WHERE (UserId = @u AND FriendId = @f)
+               OR (UserId = @f AND FriendId = @u)";
+
+                    SqlCommand c1 = new SqlCommand(check, conn);
+                    c1.Parameters.AddWithValue("@u", userId);
+                    c1.Parameters.AddWithValue("@f", friendId);
+
+                    if (Convert.ToInt32(c1.ExecuteScalar()) > 0)
+                        return false;
+
+                    // 2️⃣ Insert request PENDING
+                    string q = @"
+            INSERT INTO Friends (UserId, FriendId, Status)
+            VALUES (@u, @f, 'PENDING')";
+
+                    SqlCommand cmd = new SqlCommand(q, conn);
+                    cmd.Parameters.AddWithValue("@u", userId);
+                    cmd.Parameters.AddWithValue("@f", friendId);
+                    cmd.ExecuteNonQuery();
+
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("DB:AddFriend " + ex.Message);
+                    return false;
+                }
+                finally
+                {
+                    if (conn != null) conn.Dispose();
+                }
+            }
+
+
+
+            public static List<string> GetFriendList(int userId)
+            {
+                List<string> list = new List<string>();
+                SqlConnection conn = null;
+
+                try
+                {
+                    conn = GetConnection();
+                    conn.Open();
+
+                    string q = @"
+            SELECT U.Username
+            FROM Friends F
+            JOIN Users U ON
+                (F.UserId = @u AND U.Id = F.FriendId)
+             OR (F.FriendId = @u AND U.Id = F.UserId)
+            WHERE F.Status = 'ACCEPTED'";
+
+                    SqlCommand cmd = new SqlCommand(q, conn);
+                    cmd.Parameters.AddWithValue("@u", userId);
+
+                    SqlDataReader r = cmd.ExecuteReader();
+                    while (r.Read())
+                    {
+                        list.Add(r["Username"].ToString());
+                    }
+                    r.Close();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("DB:GetFriendList " + ex.Message);
+                }
+                finally
+                {
+                    if (conn != null) conn.Dispose();
+                }
+
+                return list;
+            }
+
+            public static List<object> GetFriendRequests(int userId)
+            {
+                List<object> list = new List<object>();
+
+                using (SqlConnection conn = GetConnection())
+                {
+                    conn.Open();
+
+                    string q = @"
+        SELECT U.Id, U.Username
+        FROM Friends F
+        JOIN Users U ON U.Id = F.UserId
+        WHERE F.FriendId = @u AND F.Status = 'PENDING'";
+
+                    SqlCommand cmd = new SqlCommand(q, conn);
+                    cmd.Parameters.AddWithValue("@u", userId);
+
+                    SqlDataReader r = cmd.ExecuteReader();
+                    while (r.Read())
+                    {
+                        list.Add(new
+                        {
+                            userId = (int)r["Id"],
+                            username = r["Username"].ToString()
+                        });
+                    }
+                }
+
+                return list;
+            }
+            public static bool UpdateFriendStatus(int fromId, int toId, string status)
+            {
+                using (SqlConnection conn = GetConnection())
+                {
+                    conn.Open();
+
+                    string q = @"UPDATE Friends
+                     SET Status=@s
+                     WHERE UserId=@f AND FriendId=@t";
+
+                    SqlCommand cmd = new SqlCommand(q, conn);
+                    cmd.Parameters.AddWithValue("@s", status);
+                    cmd.Parameters.AddWithValue("@f", fromId);
+                    cmd.Parameters.AddWithValue("@t", toId);
+
+                    return cmd.ExecuteNonQuery() > 0;
+                }
+            }
+
+
+            public static bool AcceptFriend(int userId, int fromUserId)
+            {
+                SqlConnection conn = GetConnection();
+                conn.Open();
+
+                string q = @"
+UPDATE Friends 
+SET Status = 'ACCEPTED'
+WHERE UserId = @from AND FriendId = @to AND Status = 'PENDING'";
+
+                SqlCommand cmd = new SqlCommand(q, conn);
+                cmd.Parameters.AddWithValue("@from", fromUserId);
+                cmd.Parameters.AddWithValue("@to", userId);
+
+                int rows = cmd.ExecuteNonQuery();
+                conn.Close();
+
+                return rows > 0;
+            }
+
+            public static bool RejectFriend(int userId, int fromUserId)
+            {
+                SqlConnection conn = GetConnection();
+                conn.Open();
+
+                string q = @"
+UPDATE Friends 
+SET Status = 'REJECTED'
+WHERE UserId = @from AND FriendId = @to AND Status = 'PENDING'";
+
+                SqlCommand cmd = new SqlCommand(q, conn);
+                cmd.Parameters.AddWithValue("@from", fromUserId);
+                cmd.Parameters.AddWithValue("@to", userId);
+
+                int rows = cmd.ExecuteNonQuery();
+                conn.Close();
+
+                return rows > 0;
+            }
+
+
+        }
+
+        public static class FriendHandlers
+        {
+            // =========================
+            // ADD FRIEND
+            // =========================
+            public static void HandleAddFriend(ClientConnection client, string payload)
+            {
+                if (!CheckLogin(client)) return;
+
+                try
+                {
+                    var data = JsonHelper.Deserialize<JsonElement>(payload);
+                    string friendName = data.GetProperty("friendName").GetString();
+
+                    if (string.IsNullOrWhiteSpace(friendName))
+                    {
+                        SendResult(client, false, "Tên người dùng không hợp lệ");
+                        return;
+                    }
+
+                    if (friendName == client.Username)
+                    {
+                        SendResult(client, false, "Không thể kết bạn với chính mình");
+                        return;
+                    }
+
+                    var friend = Services.Database.GetUser(friendName);
+                    if (friend == null)
+                    {
+                        SendResult(client, false, "Người dùng không tồn tại");
+                        return;
+                    }
+
+                    int myId = Services.Database.GetUserId(client.Username);
+                    bool ok = Services.Database.AddFriendRequest(myId, friend.Id, out string msg);
+                    SendResult(client, ok, msg);
+
+                    if (ok)
+                    {
+                        var targetClient = FindOnlineClientByUserId(myId);
+                        if (targetClient != null)
+                        {
+                            var requests = Services.Database.GetFriendRequests(myId);
+                            targetClient.SendEnvelope(
+                                MessageType.FRIEND_REQUEST_LIST,
+                                JsonHelper.Serialize(requests)
+                            );
+                        }
+                    }
+
+                    
+                }
+                catch
+                {
+                    SendResult(client, false, "Lỗi hệ thống");
+                }
+            }
+
+            private static ClientConnection FindOnlineClientByUserId(int userId)
+            {
+                lock (ClientConnection.AllClients)
+                {
+                    foreach (var c in ClientConnection.AllClients)
+                    {
+                        if (Services.Database.GetUserId(c.Username) == userId)
+                            return c;
+                    }
+                }
+                return null;
+            }
+
+
+            // =========================
+            // GET FRIEND REQUESTS
+            // =========================
+            public static void HandleGetFriendRequests(ClientConnection client)
+            {
+                if (!CheckLogin(client)) return;
+
+                int userId = Services.Database.GetUserId(client.Username);
+                var list = Services.Database.GetFriendRequests(userId);
+
+                client.SendEnvelope(
+                    MessageType.FRIEND_REQUEST_LIST,
+                    JsonHelper.Serialize(list)
+                );
+            }
+
+            // =========================
+            // ACCEPT FRIEND
+            // =========================
+            public static void HandleAcceptFriend(ClientConnection client, string payload)
+            {
+                HandleFriendDecision(client, payload, true);
+            }
+
+            // =========================
+            // REJECT FRIEND
+            // =========================
+            public static void HandleRejectFriend(ClientConnection client, string payload)
+            {
+                HandleFriendDecision(client, payload, false);
+            }
+
+            // =========================
+            // COMMON ACCEPT / REJECT
+            // =========================
+            private static void HandleFriendDecision(ClientConnection client, string payload, bool accept)
+            {
+                if (!CheckLogin(client)) return;
+
+                try
+                {
+                    var data = JsonHelper.Deserialize<JsonElement>(payload);
+                    int fromUserId = data.GetProperty("fromUserId").GetInt32();
+                    int myId = Services.Database.GetUserId(client.Username);
+
+                    bool ok = accept
+                        ? Services.Database.AcceptFriend(myId, fromUserId)
+                        : Services.Database.RejectFriend(myId, fromUserId);
+
+                    SendResult(
+                        client,
+                        ok,
+                        ok
+                            ? (accept ? "Đã chấp nhận lời mời" : "Đã từ chối lời mời")
+                            : "Không thể xử lý yêu cầu"
+                    );
+                }
+                catch
+                {
+                    SendResult(client, false, "Lỗi hệ thống");
+                }
+            }
+
+
+            // =========================
+            // UTILS
+            // =========================
+            private static bool CheckLogin(ClientConnection client)
+            {
+                if (string.IsNullOrEmpty(client.Username) || client.Username == "Unknown")
+                {
+                    client.SendEnvelope(
+                        MessageType.FRIEND_ACTION_RESULT,
+                        JsonHelper.Serialize(new { success = false, message = "Chưa đăng nhập" })
+                    );
+                    return false;
+                }
+                return true;
+            }
+
+            private static void SendResult(ClientConnection client, bool ok, string msg)
+            {
+                client.SendEnvelope(
+                    MessageType.FRIEND_ACTION_RESULT,
+                    JsonHelper.Serialize(new { success = ok, message = msg })
+                );
+            }
+
+            public static void HandleFriendList(ClientConnection client)
+            {
+                if (!CheckLogin(client)) return;
+
+                int userId = Services.Database.GetUserId(client.Username);
+                var list = Services.Database.GetFriendList(userId);
+
+                client.SendEnvelope(
+                    MessageType.FRIEND_LIST,
+                    JsonHelper.Serialize(list)
+                );
+            }
+
+
         }
     }
 }

@@ -55,6 +55,15 @@ namespace ServerCore.ServerCore
         PING,
         PONG,
 
+        // FRIEND
+        FRIEND_ADD,
+        FRIEND_LIST,
+        GET_FRIEND_REQUESTS,
+        FRIEND_REQUEST_LIST,
+        ACCEPT_FRIEND,
+        REJECT_FRIEND,
+        FRIEND_ACTION_RESULT,
+
         // GENERAL
         ERROR
     }

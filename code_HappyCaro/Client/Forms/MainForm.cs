@@ -25,6 +25,8 @@ namespace Client.Forms
 
             _dispatcher = dispatcher;
             _request = new ClientRequest(dispatcher.Tcp); // Tạo request từ kết nối có sẵn
+            _request.RequestFriendList();
+
 
             _user = new UserInfo
             {
@@ -40,6 +42,14 @@ namespace Client.Forms
             _dispatcher.OnRoomJoined += OnRoomJoined;
             _dispatcher.OnRoomUpdate += OnRoomListReceived;
             _dispatcher.OnAddFriendResult += OnAddFriendResult;
+            _dispatcher.OnFriendRequestList += OnFriendRequestList;
+            _dispatcher.OnFriendActionResult += OnFriendActionResult;
+            _dispatcher.OnFriendList += OnFriendListReceived;
+
+
+
+            _request.GetFriendRequests();
+
         }
 
         private void MainForm_Load(object sender, EventArgs e)
@@ -84,6 +94,7 @@ namespace Client.Forms
             // Lấy bảng xếp hạng
             _request.RequestRanking();
         }
+
 
         private void btnMusic_Click(object sender, EventArgs e)
         {
@@ -312,6 +323,42 @@ namespace Client.Forms
             }
         }
 
+        private void OnFriendRequestList(string json)
+        {
+            if (InvokeRequired)
+            {
+                Invoke(new Action<string>(OnFriendRequestList), json);
+                return;
+            }
+
+            var list = JsonHelper.Deserialize<List<FriendRequestItem>>(json);
+            if (list == null || list.Count == 0) return;
+
+            foreach (var req in list)
+            {
+                var rs = MessageBox.Show(
+                    $"{req.username} muốn kết bạn với bạn",
+                    "Lời mời kết bạn",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question);
+
+                if (rs == DialogResult.Yes)
+                    _request.AcceptFriend(req.userId);
+                else
+                    _request.RejectFriend(req.userId);
+            }
+        }
+
+
+        private void OnFriendActionResult(bool success, string message)
+        {
+            MessageBox.Show(message,
+                success ? "Thành công" : "Lỗi",
+                MessageBoxButtons.OK,
+                success ? MessageBoxIcon.Information : MessageBoxIcon.Error);
+        }
+
+
         private void OnAddFriendResult(bool success, string message)
         {
             if (InvokeRequired) { Invoke(new Action<bool, string>(OnAddFriendResult), success, message); return; }
@@ -325,6 +372,24 @@ namespace Client.Forms
                 MessageBox.Show(message, "Thất bại", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+        private void OnFriendListReceived(string json)
+        {
+            if (InvokeRequired)
+            {
+                Invoke(new Action<string>(OnFriendListReceived), json);
+                return;
+            }
+
+            listFriends.Items.Clear();
+
+            var friends = JsonHelper.Deserialize<List<string>>(json);
+            if (friends == null) return;
+
+            foreach (var f in friends)
+                listFriends.Items.Add(f);
+        }
+
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -397,4 +462,11 @@ namespace Client.Forms
         public int Wins { get; set; }
         public int Losses { get; set; }
     }
+
+    public class FriendRequestItem
+    {
+        public int userId { get; set; }
+        public string username { get; set; }
+    }
+
 }

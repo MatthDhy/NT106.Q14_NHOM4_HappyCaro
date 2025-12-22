@@ -98,21 +98,24 @@ namespace Client
                     OnChatReceived?.Invoke(env.Payload);
                     break;
 
-                case MessageType.FRIEND_ADD_OK:
-                    OnAddFriendResult?.Invoke(true, "Kết bạn thành công!");
+                case MessageType.FRIEND_ACTION_RESULT:
+                    {
+                        var data = JsonHelper.Deserialize<JsonElement>(env.Payload);
+                        bool success = data.GetProperty("success").GetBoolean();
+                        string message = data.GetProperty("message").GetString();
+                        OnFriendActionResult?.Invoke(success, message);
+                        break;
+                    }
+
+                case MessageType.FRIEND_REQUEST_LIST:
+                    OnFriendRequestList?.Invoke(env.Payload);
                     break;
 
-                case MessageType.FRIEND_ADD_FAIL:
-                    // Server trả về payload dạng { "message": "User not found" }
-                    string reason = "Lỗi kết bạn";
-                    try
-                    {
-                        var data = JsonHelper.Deserialize<System.Text.Json.JsonElement>(env.Payload);
-                        if (data.TryGetProperty("message", out var msg)) reason = msg.GetString();
-                    }
-                    catch { }
-                    OnAddFriendResult?.Invoke(false, reason);
+                case MessageType.FRIEND_LIST:
+                    OnFriendList?.Invoke(env.Payload);
                     break;
+
+
 
                 // RANK ##################################################
                 case MessageType.RANKING_DATA:
@@ -142,6 +145,11 @@ namespace Client
         // OTP EVENTS
         public event Action<string> OnVerifyOTPSuccess; 
         public event Action<string> OnVerifyOTPFail;
+        // FRIEND
+        public event Action<string> OnFriendList;
+        public event Action<string> OnFriendRequestList;
+        public event Action<bool, string> OnFriendActionResult;
+
 
 
         // ROOM EVENTS

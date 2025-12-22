@@ -1,10 +1,12 @@
-﻿using System;
+﻿using MailKit;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using static System.Collections.Specialized.BitVector32;
 
 namespace ServerCore.ServerCore
 {
@@ -217,6 +219,27 @@ namespace ServerCore.ServerCore
                     case MessageType.CHAT_SEND:
                         GameCore.RoomManager.ChatInRoom(this, env.Payload);
                         break;
+                    case MessageType.FRIEND_ADD:
+                        Services.FriendHandlers.HandleAddFriend(this, env.Payload);
+                        break;
+
+                    case MessageType.FRIEND_LIST:
+                        Services.FriendHandlers.HandleFriendList(this);
+                        break;
+
+                    case MessageType.GET_FRIEND_REQUESTS:
+                        Services.FriendHandlers.HandleGetFriendRequests(this);
+                        break;
+
+                    case MessageType.ACCEPT_FRIEND:
+                        Services.FriendHandlers.HandleAcceptFriend(this, env.Payload);
+                        break;
+
+                    case MessageType.REJECT_FRIEND:
+                        Services.FriendHandlers.HandleRejectFriend(this, env.Payload);
+                        break;
+
+
                     case MessageType.REQUEST_RANKING:
                         var list = Services.Database.GetRanking();
                         var pList = list.ConvertAll(u => new RankingItem { username = u.Username, rank = u.RankPoint, wins = u.Wins, losses = u.Losses, draws = u.Draws });
