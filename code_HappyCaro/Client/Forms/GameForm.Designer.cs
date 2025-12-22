@@ -284,7 +284,7 @@
             this.pnlBoard.Location = new System.Drawing.Point(351, 94);
             this.pnlBoard.Margin = new System.Windows.Forms.Padding(0);
             this.pnlBoard.Name = "pnlBoard";
-            this.pnlBoard.Size = new System.Drawing.Size(785, 810);
+            this.pnlBoard.Size = new System.Drawing.Size(790, 810);
             this.pnlBoard.TabIndex = 0;
             // 
             // btnMusic
