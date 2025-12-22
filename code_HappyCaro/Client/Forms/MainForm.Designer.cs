@@ -33,6 +33,7 @@
             this.colPoint = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.grpFriends = new Guna.UI2.WinForms.Guna2GroupBox();
             this.listFriends = new System.Windows.Forms.ListBox();
+            this.btnAddFriend = new Guna.UI2.WinForms.Guna2Button();
             this.grpUserInfo = new Guna.UI2.WinForms.Guna2GroupBox();
             this.lblWinRate = new System.Windows.Forms.Label();
             this.lblRankPoint = new System.Windows.Forms.Label();
@@ -44,8 +45,6 @@
             this.btnLogout = new Guna.UI2.WinForms.Guna2Button();
             this.guna2Elipse1 = new Guna.UI2.WinForms.Guna2Elipse(this.components);
             this.guna2DragControl1 = new Guna.UI2.WinForms.Guna2DragControl(this.components);
-            this.btnAddFriend = new Guna.UI2.WinForms.Guna2Button();
-            this.grpFriends.SuspendLayout();
             this.pnlBackground.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.grpRanking.SuspendLayout();
@@ -251,6 +250,7 @@
             this.grpFriends.BorderColor = System.Drawing.Color.White;
             this.grpFriends.BorderRadius = 15;
             this.grpFriends.Controls.Add(this.listFriends);
+            this.grpFriends.Controls.Add(this.btnAddFriend);
             this.grpFriends.CustomBorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
             this.grpFriends.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
             this.grpFriends.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
@@ -261,8 +261,6 @@
             this.grpFriends.Size = new System.Drawing.Size(338, 400);
             this.grpFriends.TabIndex = 4;
             this.grpFriends.Text = "Danh sách bạn bè";
-            this.grpFriends.Controls.Add(this.listFriends);
-            this.grpFriends.Controls.Add(this.btnAddFriend);
             // 
             // listFriends
             // 
@@ -275,16 +273,16 @@
             this.listFriends.Location = new System.Drawing.Point(17, 75);
             this.listFriends.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.listFriends.Name = "listFriends";
-            this.listFriends.Size = new System.Drawing.Size(304, 200);
+            this.listFriends.Size = new System.Drawing.Size(304, 196);
             this.listFriends.TabIndex = 0;
             // 
-            // btnAddFriend (Thiết kế nút)
+            // btnAddFriend
             // 
             this.btnAddFriend.BorderRadius = 10;
             this.btnAddFriend.FillColor = System.Drawing.Color.Teal;
             this.btnAddFriend.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.btnAddFriend.ForeColor = System.Drawing.Color.White;
-            this.btnAddFriend.Location = new System.Drawing.Point(17, 290); // Nằm dưới listFriends
+            this.btnAddFriend.Location = new System.Drawing.Point(17, 290);
             this.btnAddFriend.Name = "btnAddFriend";
             this.btnAddFriend.Size = new System.Drawing.Size(304, 40);
             this.btnAddFriend.TabIndex = 1;
@@ -385,8 +383,7 @@
             this.btnMusic.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(128)))));
             this.btnMusic.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.btnMusic.ForeColor = System.Drawing.Color.White;
-            this.btnMusic.Location = new System.Drawing.Point(34, 38);
-            this.btnMusic.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.btnMusic.Location = new System.Drawing.Point(51, 62);
             this.btnMusic.Name = "btnMusic";
             this.btnMusic.Size = new System.Drawing.Size(89, 41);
             this.btnMusic.TabIndex = 20;
