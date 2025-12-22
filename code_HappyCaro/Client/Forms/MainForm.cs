@@ -17,6 +17,7 @@ namespace Client.Forms
         private readonly UserInfo _user;
         private bool _isQuickMatch = false;
         private bool _isLogout = false;
+        private bool _isGameOpening = false;
 
         // Constructor này KHỚP 100% với LoginForm hiện tại của bạn
         public MainForm(ClientDispatcher dispatcher, string username, int rank, int wins, int losses)
@@ -281,13 +282,22 @@ namespace Client.Forms
         // ==========================================================
         private void OpenGameForm(int roomId, string myUser, string oppUser, string firstTurn)
         {
-            // Truyền Dispatcher và Request đã có sang GameForm
+            // Nếu cờ đang bật (tức là đã có 1 lệnh mở form đang chạy) thì return ngay
+            if (_isGameOpening) return;
+
+            _isGameOpening = true; // Bật cờ lên
+
             var game = new GameForm(_dispatcher, _request, roomId, myUser, oppUser, firstTurn);
 
             game.FormClosed += (s, e) =>
             {
                 this.Show();
-                _request.RequestRanking(); // Cập nhật lại rank
+                this.Cursor = Cursors.Default;
+                _request.RequestRanking();
+
+                // Khi đóng game thì reset cờ để lần sau chơi tiếp được
+                _isGameOpening = false;
+                btnCreateRoom.Enabled = true;
             };
 
             game.Show();

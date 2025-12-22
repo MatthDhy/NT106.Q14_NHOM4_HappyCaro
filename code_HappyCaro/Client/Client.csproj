@@ -224,6 +224,8 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="Resources\LogoHC.png" />
+    <None Include="Resources\iconX.png" />
+    <None Include="Resources\iconO.png" />
     <Content Include="Sounds\background.wav">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
