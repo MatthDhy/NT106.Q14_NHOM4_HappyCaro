@@ -26,11 +26,9 @@
             this.txtChatLog = new System.Windows.Forms.RichTextBox();
             this.lblTurn = new System.Windows.Forms.Label();
             this.grpOpponentInfo = new Guna.UI2.WinForms.Guna2GroupBox();
-            this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.lblOpponentSymbol = new System.Windows.Forms.Label();
             this.lblOpponentName = new System.Windows.Forms.Label();
             this.grpMyInfo = new Guna.UI2.WinForms.Guna2GroupBox();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.lblMySymbol = new System.Windows.Forms.Label();
             this.lblMyName = new System.Windows.Forms.Label();
             this.pnlBoard = new System.Windows.Forms.Panel();
@@ -39,9 +37,7 @@
             this.pnlBackground.SuspendLayout();
             this.grpChat.SuspendLayout();
             this.grpOpponentInfo.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.grpMyInfo.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // pnlBackground
@@ -205,7 +201,6 @@
             // 
             this.grpOpponentInfo.BackColor = System.Drawing.Color.Transparent;
             this.grpOpponentInfo.BorderRadius = 15;
-            this.grpOpponentInfo.Controls.Add(this.pictureBox2);
             this.grpOpponentInfo.Controls.Add(this.lblOpponentSymbol);
             this.grpOpponentInfo.Controls.Add(this.lblOpponentName);
             this.grpOpponentInfo.CustomBorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
@@ -219,21 +214,12 @@
             this.grpOpponentInfo.TabIndex = 2;
             this.grpOpponentInfo.Text = "ĐỐI THỦ";
             // 
-            // pictureBox2
-            // 
-            this.pictureBox2.Image = global::Client.Properties.Resources.iconO;
-            this.pictureBox2.Location = new System.Drawing.Point(104, 133);
-            this.pictureBox2.Name = "pictureBox2";
-            this.pictureBox2.Size = new System.Drawing.Size(114, 106);
-            this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.pictureBox2.TabIndex = 2;
-            this.pictureBox2.TabStop = false;
-            // 
             // lblOpponentSymbol
             // 
             this.lblOpponentSymbol.AutoSize = true;
+            this.lblOpponentSymbol.BackColor = System.Drawing.Color.Transparent;
             this.lblOpponentSymbol.Font = new System.Drawing.Font("Segoe UI Black", 40F, System.Drawing.FontStyle.Bold);
-            this.lblOpponentSymbol.ForeColor = System.Drawing.Color.Transparent;
+            this.lblOpponentSymbol.ForeColor = System.Drawing.Color.RoyalBlue;
             this.lblOpponentSymbol.Location = new System.Drawing.Point(95, 133);
             this.lblOpponentSymbol.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblOpponentSymbol.Name = "lblOpponentSymbol";
@@ -256,7 +242,6 @@
             // 
             this.grpMyInfo.BackColor = System.Drawing.Color.Transparent;
             this.grpMyInfo.BorderRadius = 15;
-            this.grpMyInfo.Controls.Add(this.pictureBox1);
             this.grpMyInfo.Controls.Add(this.lblMySymbol);
             this.grpMyInfo.Controls.Add(this.lblMyName);
             this.grpMyInfo.CustomBorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(192)))), ((int)(((byte)(0)))));
@@ -270,21 +255,11 @@
             this.grpMyInfo.TabIndex = 1;
             this.grpMyInfo.Text = "BẠN (Player)";
             // 
-            // pictureBox1
-            // 
-            this.pictureBox1.Image = global::Client.Properties.Resources.iconX;
-            this.pictureBox1.Location = new System.Drawing.Point(96, 114);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(104, 125);
-            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.pictureBox1.TabIndex = 2;
-            this.pictureBox1.TabStop = false;
-            // 
             // lblMySymbol
             // 
             this.lblMySymbol.AutoSize = true;
             this.lblMySymbol.Font = new System.Drawing.Font("Tahoma", 40F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblMySymbol.ForeColor = System.Drawing.Color.Transparent;
+            this.lblMySymbol.ForeColor = System.Drawing.Color.OrangeRed;
             this.lblMySymbol.Location = new System.Drawing.Point(103, 133);
             this.lblMySymbol.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblMySymbol.Name = "lblMySymbol";
@@ -351,10 +326,8 @@
             this.grpChat.ResumeLayout(false);
             this.grpOpponentInfo.ResumeLayout(false);
             this.grpOpponentInfo.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             this.grpMyInfo.ResumeLayout(false);
             this.grpMyInfo.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -379,8 +352,6 @@
         private Guna.UI2.WinForms.Guna2GradientButton btnPlayAgain;
         private System.Windows.Forms.Label lblHastag;
         private System.Windows.Forms.Label lblOpponentSymbol;
-        private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.Label lblMySymbol;
-        private System.Windows.Forms.PictureBox pictureBox2;
     }
 }
