@@ -16,6 +16,7 @@
         {
             this.components = new System.ComponentModel.Container();
             this.pnlBackground = new Guna.UI2.WinForms.Guna2GradientPanel();
+            this.lblHastag = new System.Windows.Forms.Label();
             this.btnExit = new Guna.UI2.WinForms.Guna2ControlBox();
             this.btnSurrender = new Guna.UI2.WinForms.Guna2GradientButton();
             this.btnPlayAgain = new Guna.UI2.WinForms.Guna2GradientButton();
@@ -25,23 +26,22 @@
             this.txtChatLog = new System.Windows.Forms.RichTextBox();
             this.lblTurn = new System.Windows.Forms.Label();
             this.grpOpponentInfo = new Guna.UI2.WinForms.Guna2GroupBox();
+            this.pictureBox2 = new System.Windows.Forms.PictureBox();
+            this.lblOpponentSymbol = new System.Windows.Forms.Label();
             this.lblOpponentName = new System.Windows.Forms.Label();
             this.grpMyInfo = new Guna.UI2.WinForms.Guna2GroupBox();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.lblMySymbol = new System.Windows.Forms.Label();
             this.lblMyName = new System.Windows.Forms.Label();
             this.pnlBoard = new System.Windows.Forms.Panel();
             this.btnMusic = new Guna.UI2.WinForms.Guna2Button();
             this.guna2DragControl1 = new Guna.UI2.WinForms.Guna2DragControl(this.components);
-            this.lblHastag = new System.Windows.Forms.Label();
-            this.lblOpponentSymbol = new System.Windows.Forms.Label();
-            this.lblMySymbol = new System.Windows.Forms.Label();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.pnlBackground.SuspendLayout();
             this.grpChat.SuspendLayout();
             this.grpOpponentInfo.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.grpMyInfo.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.SuspendLayout();
             // 
             // pnlBackground
@@ -65,6 +65,18 @@
             this.pnlBackground.Name = "pnlBackground";
             this.pnlBackground.Size = new System.Drawing.Size(1517, 987);
             this.pnlBackground.TabIndex = 0;
+            // 
+            // lblHastag
+            // 
+            this.lblHastag.AutoSize = true;
+            this.lblHastag.BackColor = System.Drawing.Color.Transparent;
+            this.lblHastag.Font = new System.Drawing.Font("Calibri", 14F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblHastag.ForeColor = System.Drawing.SystemColors.ButtonHighlight;
+            this.lblHastag.Location = new System.Drawing.Point(588, 917);
+            this.lblHastag.Name = "lblHastag";
+            this.lblHastag.Size = new System.Drawing.Size(327, 35);
+            this.lblHastag.TabIndex = 21;
+            this.lblHastag.Text = "#Vui là chính, thắng là mười";
             // 
             // btnExit
             // 
@@ -94,7 +106,7 @@
             this.btnSurrender.Name = "btnSurrender";
             this.btnSurrender.Size = new System.Drawing.Size(231, 61);
             this.btnSurrender.TabIndex = 5;
-            this.btnSurrender.Text = "XIN THUA";
+            this.btnSurrender.Text = "ĐẦU HÀNG";
             this.btnSurrender.Click += new System.EventHandler(this.btnSurrender_Click);
             // 
             // btnPlayAgain
@@ -207,6 +219,28 @@
             this.grpOpponentInfo.TabIndex = 2;
             this.grpOpponentInfo.Text = "ĐỐI THỦ";
             // 
+            // pictureBox2
+            // 
+            this.pictureBox2.Image = global::Client.Properties.Resources.iconO;
+            this.pictureBox2.Location = new System.Drawing.Point(104, 133);
+            this.pictureBox2.Name = "pictureBox2";
+            this.pictureBox2.Size = new System.Drawing.Size(114, 106);
+            this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.pictureBox2.TabIndex = 2;
+            this.pictureBox2.TabStop = false;
+            // 
+            // lblOpponentSymbol
+            // 
+            this.lblOpponentSymbol.AutoSize = true;
+            this.lblOpponentSymbol.Font = new System.Drawing.Font("Segoe UI Black", 40F, System.Drawing.FontStyle.Bold);
+            this.lblOpponentSymbol.ForeColor = System.Drawing.Color.Transparent;
+            this.lblOpponentSymbol.Location = new System.Drawing.Point(95, 133);
+            this.lblOpponentSymbol.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lblOpponentSymbol.Name = "lblOpponentSymbol";
+            this.lblOpponentSymbol.Size = new System.Drawing.Size(106, 106);
+            this.lblOpponentSymbol.TabIndex = 1;
+            this.lblOpponentSymbol.Text = "O";
+            // 
             // lblOpponentName
             // 
             this.lblOpponentName.AutoSize = true;
@@ -235,6 +269,28 @@
             this.grpMyInfo.Size = new System.Drawing.Size(300, 293);
             this.grpMyInfo.TabIndex = 1;
             this.grpMyInfo.Text = "BẠN (Player)";
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Image = global::Client.Properties.Resources.iconX;
+            this.pictureBox1.Location = new System.Drawing.Point(96, 114);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(104, 125);
+            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.pictureBox1.TabIndex = 2;
+            this.pictureBox1.TabStop = false;
+            // 
+            // lblMySymbol
+            // 
+            this.lblMySymbol.AutoSize = true;
+            this.lblMySymbol.Font = new System.Drawing.Font("Tahoma", 40F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblMySymbol.ForeColor = System.Drawing.Color.Transparent;
+            this.lblMySymbol.Location = new System.Drawing.Point(103, 133);
+            this.lblMySymbol.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lblMySymbol.Name = "lblMySymbol";
+            this.lblMySymbol.Size = new System.Drawing.Size(97, 97);
+            this.lblMySymbol.TabIndex = 1;
+            this.lblMySymbol.Text = "X";
             // 
             // lblMyName
             // 
@@ -277,62 +333,6 @@
             this.guna2DragControl1.TargetControl = this.pnlBackground;
             this.guna2DragControl1.UseTransparentDrag = true;
             // 
-            // lblHastag
-            // 
-            this.lblHastag.AutoSize = true;
-            this.lblHastag.BackColor = System.Drawing.Color.Transparent;
-            this.lblHastag.Font = new System.Drawing.Font("Calibri", 14F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblHastag.ForeColor = System.Drawing.SystemColors.ButtonHighlight;
-            this.lblHastag.Location = new System.Drawing.Point(588, 917);
-            this.lblHastag.Name = "lblHastag";
-            this.lblHastag.Size = new System.Drawing.Size(327, 35);
-            this.lblHastag.TabIndex = 21;
-            this.lblHastag.Text = "#Vui là chính, thắng là mười";
-            // 
-            // lblOpponentSymbol
-            // 
-            this.lblOpponentSymbol.AutoSize = true;
-            this.lblOpponentSymbol.Font = new System.Drawing.Font("Segoe UI Black", 40F, System.Drawing.FontStyle.Bold);
-            this.lblOpponentSymbol.ForeColor = System.Drawing.Color.Transparent;
-            this.lblOpponentSymbol.Location = new System.Drawing.Point(95, 133);
-            this.lblOpponentSymbol.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lblOpponentSymbol.Name = "lblOpponentSymbol";
-            this.lblOpponentSymbol.Size = new System.Drawing.Size(106, 106);
-            this.lblOpponentSymbol.TabIndex = 1;
-            this.lblOpponentSymbol.Text = "O";
-            // 
-            // lblMySymbol
-            // 
-            this.lblMySymbol.AutoSize = true;
-            this.lblMySymbol.Font = new System.Drawing.Font("Tahoma", 40F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblMySymbol.ForeColor = System.Drawing.Color.Transparent;
-            this.lblMySymbol.Location = new System.Drawing.Point(103, 133);
-            this.lblMySymbol.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lblMySymbol.Name = "lblMySymbol";
-            this.lblMySymbol.Size = new System.Drawing.Size(97, 97);
-            this.lblMySymbol.TabIndex = 1;
-            this.lblMySymbol.Text = "X";
-            // 
-            // pictureBox1
-            // 
-            this.pictureBox1.Image = global::Client.Properties.Resources.iconX;
-            this.pictureBox1.Location = new System.Drawing.Point(96, 114);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(104, 125);
-            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.pictureBox1.TabIndex = 2;
-            this.pictureBox1.TabStop = false;
-            // 
-            // pictureBox2
-            // 
-            this.pictureBox2.Image = global::Client.Properties.Resources.iconO;
-            this.pictureBox2.Location = new System.Drawing.Point(104, 133);
-            this.pictureBox2.Name = "pictureBox2";
-            this.pictureBox2.Size = new System.Drawing.Size(114, 106);
-            this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.pictureBox2.TabIndex = 2;
-            this.pictureBox2.TabStop = false;
-            // 
             // GameForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
@@ -351,10 +351,10 @@
             this.grpChat.ResumeLayout(false);
             this.grpOpponentInfo.ResumeLayout(false);
             this.grpOpponentInfo.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             this.grpMyInfo.ResumeLayout(false);
             this.grpMyInfo.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             this.ResumeLayout(false);
 
         }
